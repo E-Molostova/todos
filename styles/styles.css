@@ -1,0 +1,13 @@
+ul {
+  padding: 0;
+  margin: 0;
+}
+
+.itemTodo {
+  display: flex;
+  align-items: center;
+}
+
+.itemCompleted {
+  text-decoration: line-through;
+}
