@@ -8,10 +8,10 @@ input.placeholder = 'what needs to be done?';
 form.appendChild(input);
 
 const todoList = document.createElement('ul');
-form.append(todoList);
+document.body.append(todoList);
 
 form.addEventListener('submit', handleTodoAdd);
-// todoList.addEventListener('click', handleClick);
+todoList.addEventListener('click', handleTodoCompletedAndDelete);
 
 function handleTodoAdd(e) {
   e.preventDefault();
@@ -43,23 +43,29 @@ function createDeleteBtn(liItem) {
   btn.type = 'text';
   btn.textContent = 'X';
   liItem.appendChild(btn);
-  btn.addEventListener('click', () => liItem.remove());
+
+  return btn;
 }
 
-// function handleClick(e) {
-//   if (e.currentTarget === e.target) {
-//     return;
-//   }
+function handleTodoCompletedAndDelete(e) {
+  if (e.currentTarget === e.target) {
+    return;
+  }
 
-//   // if (e.target.nodeName === 'LI') {
+  if (e.target.nodeName === 'BUTTON') {
+    e.stopPropagation();
+    const liItem = e.target.parentNode;
+    console.log(liItem);
+    liItem.remove();
+  }
 
-//   // }
+  // console.log(e.target);
 
-//   // // const text= e.target.closest('li').closest('p');
-//   // console.log(e.target.closest('li'));
-//   // const input = e.target.closest('input');
+  const text = e.target.closest('li').closest('p');
+  // console.log(e.target.closest('li'));
+  const input = e.target.closest('input');
 
-//   // if (input?.checked) {
-//   //    e.target.closest('li').classList.toggle('itemCompleted')
-//   // }
-// }
+  // if (input?.checked) {
+  //   e.target.closest('li').classList.toggle('itemCompleted');
+  // }
+}
