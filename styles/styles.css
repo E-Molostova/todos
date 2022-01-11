@@ -1,13 +1,100 @@
-ul {
-  padding: 0;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
   margin: 0;
+  padding: 0;
 }
 
-.itemTodo {
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip: rect(0 0 0 0);
+}
+body {
+  font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background: #f5f5f5;
+}
+
+.form {
+  width: 550px;
+  margin: 0 auto;
+  background-color: rgba(0, 0, 0, 0.004);
+  position: relative;
+}
+
+.input {
+  width: 550px;
+  height: 65px;
+  padding: 16px;
+  padding-left: 60px;
+  font-size: 22px;
+  outline: none;
+  border: none;
+  /* border-color: rgb(77, 77, 77); */
+  box-shadow: rgba(0, 0, 0, 0.03) 0px -2px 1px 0px inset;
+}
+
+.allCompleted {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+
+  /* padding: 10px 27px 10px 27px; */
+}
+
+.input::placeholder {
+  font-size: 22px;
+}
+
+.todoItem {
   display: flex;
   align-items: center;
+  width: 550px;
+  height: 65px;
+  color: #4d4d4d;
+  font-size: 24px;
+  padding: 15px;
 }
 
-.itemCompleted {
+.completed {
+  display: block;
+  outline: none;
+  border: none;
+  border-radius: 50%;
+  /* background-color: #fff; */
+}
+
+.description {
+  padding: 15px;
+}
+
+.todoCompleted {
   text-decoration: line-through;
+}
+
+.btn {
+  margin-left: auto;
+  border: none;
+  background-color: inherit;
+  opacity: 0;
+  color: red;
+}
+
+.todoItem:hover .btn {
+  opacity: 1;
 }
