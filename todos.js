@@ -32,8 +32,8 @@ function setLocalStorage(todos) {
 makeTodoList(todoArray);
 
 function handleTodoAdd(e) {
-  e.preventDefault();
   e.stopPropagation();
+  e.preventDefault();
 
   const newTodo = {
     id: randomInteger(),
@@ -134,14 +134,17 @@ filters.appendChild(quantity);
 
 const btnAll = document.createElement('button');
 btnAll.type = 'button';
+btnAll.classList.add('filterBtn');
 btnAll.textContent = 'All';
 btnAll.id = 'All';
 const btnActive = document.createElement('button');
 btnActive.type = 'button';
+btnActive.classList.add('filterBtn');
 btnActive.textContent = 'Active';
 btnActive.id = 'Active';
 const btnCompleted = document.createElement('button');
 btnCompleted.type = 'button';
+btnCompleted.classList.add('filterBtn');
 btnCompleted.textContent = 'Completed';
 btnCompleted.id = 'Completed';
 

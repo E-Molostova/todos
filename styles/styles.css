@@ -69,6 +69,7 @@ body {
   color: #4d4d4d;
   font-size: 24px;
   padding: 15px;
+  background-color: #fff;
 }
 
 .completed {
@@ -97,4 +98,22 @@ body {
 
 .todoItem:hover .btn {
   opacity: 1;
+}
+
+.filterDiv {
+  width: 550px;
+  background-color: #fff;
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+}
+
+.filterBtn {
+  background-color: #fff;
+  outline: none;
+  border: none;
+}
+.filterBtn:hover {
+  border-radius: 5px;
+  border: solid 1px tomato;
 }
