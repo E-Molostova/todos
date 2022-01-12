@@ -18,6 +18,7 @@ form.appendChild(todoList);
 
 form.addEventListener('submit', handleTodoAdd);
 todoList.addEventListener('click', handleCompleteAndDelete);
+todoList.addEventListener('dblclick', handleChangeText);
 
 let todoArray;
 
@@ -36,8 +37,11 @@ function setLocalStorage(todos) {
   });
   quantity.textContent = activeTodos.length + ` item left`;
 
-  // const isAnyCompleted = checkCompleted(todos);
-  // showClear(isAnyCompleted);
+  if (todoArray.every(todo => todo.checked === true)) {
+    input.classList.add('extra');
+  } else {
+    input.classList.remove('extra');
+  }
 }
 
 makeTodoList(todoArray);
@@ -69,12 +73,15 @@ function makeTodoList(array) {
 
     const completed = document.createElement('input');
     completed.type = 'checkbox';
-    completed.classList.add('custom-checkbox');
     completed.id = 'check';
     completed.checked = todo.checked;
+    todo.checked
+      ? completed.classList.add('custom-checkbox', 'extra')
+      : completed.classList.add('custom-checkbox');
 
     const label = document.createElement('label');
     label.setAttribute('for', 'check');
+    label.setAttribute('id', 'label');
 
     const text = document.createElement('p');
     todo.checked
@@ -112,8 +119,6 @@ function handleCompleteAndDelete(e) {
   }
 
   if (e.target.nodeName === 'LABEL') {
-    showClear();
-
     const itemId = e.target.closest('li').id;
     const targetItem = todoArray.filter(todo => {
       return todo.id === itemId;
@@ -127,6 +132,18 @@ function handleCompleteAndDelete(e) {
   }
 }
 
+function handleChangeText(e) {
+  if (e.target.tagName === 'P') {
+    e.target.setAttribute('contenteditable', 'true');
+    console.log(e.target.innerText);
+
+    // text.textContent = e.target.textContent;//undefined
+
+    // setLocalStorage(todoArray);
+    // makeTodoList(todoArray);
+  }
+}
+
 label.addEventListener('click', handleAllCompleted);
 function handleAllCompleted(e) {
   const isAnyActive = todoArray.some(todo => todo.checked === false);
@@ -136,7 +153,6 @@ function handleAllCompleted(e) {
       todo.checked = true;
       return todo;
     });
-
     setLocalStorage(todoArray);
     makeTodoList(todoArray);
   } else {
@@ -144,7 +160,6 @@ function handleAllCompleted(e) {
       todo.checked = false;
       return todo;
     });
-
     setLocalStorage(todoArray);
     makeTodoList(todoArray);
   }
@@ -226,7 +241,6 @@ function showClear(isAnyCompleted) {
     btnClear.classList.remove('clearBtnShow');
   }
 }
-
 const isAnyCompleted = checkCompleted(todoArray);
 showClear(isAnyCompleted);
 
@@ -239,6 +253,15 @@ function handleClearCompleted() {
   setLocalStorage(todoArray);
   makeTodoList(todoArray);
 }
+
+// const textRefs = document.querySelectorAll('.description');
+// const textArray = [...textRefs];
+// console.log(textArray);
+// // textRefs.addEventListener('dblclick', handleChangeText);
+
+// // function handleChangeText(e) {
+// //   console.log(e.target);
+// // }
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
