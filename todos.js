@@ -27,6 +27,10 @@ let todoArray;
 
 function setLocalStorage(todos) {
   localStorage.setItem('todoList', JSON.stringify(todos));
+  const activeTodos = todoArray.filter(todo => {
+    return todo.checked !== true;
+  });
+  quantity.textContent = activeTodos.length + ` item left`;
 }
 
 makeTodoList(todoArray);
@@ -42,7 +46,6 @@ function handleTodoAdd(e) {
   };
 
   todoArray.push(newTodo);
-
   setLocalStorage(todoArray);
   makeTodoList(todoArray);
 
@@ -50,6 +53,7 @@ function handleTodoAdd(e) {
 }
 
 function makeTodoList(array) {
+  todoList.innerHTML = '';
   const todoItems = array.map(todo => {
     const itemTodo = document.createElement('li');
     itemTodo.classList.add('todoItem');
@@ -57,8 +61,12 @@ function makeTodoList(array) {
 
     const completed = document.createElement('input');
     completed.type = 'checkbox';
-    completed.classList.add('completed');
+    completed.classList.add('custom-checkbox');
+    completed.id = 'check';
     completed.checked = todo.checked;
+
+    const label = document.createElement('label');
+    label.setAttribute('for', 'check');
 
     const text = document.createElement('p');
     todo.checked
@@ -69,9 +77,9 @@ function makeTodoList(array) {
     const button = document.createElement('button');
     button.type = 'button';
     button.classList.add('btn');
-    button.textContent = 'X';
+    button.textContent = 'x';
 
-    itemTodo.append(completed, text, button);
+    itemTodo.append(completed, label, text, button);
     return itemTodo;
   });
 
@@ -93,16 +101,27 @@ function handleCompleteAndDelete(e) {
     });
     setLocalStorage(todoArray);
     makeTodoList(todoArray);
+    // const activeTodos = todoArray.filter(todo => {
+    //   return todo.checked !== true;
+    // });
+    // quantity.textContent = activeTodos.length + ` item left`;
   }
 
-  if (e.target.nodeName === 'INPUT') {
+  if (e.target.nodeName === 'LABEL') {
     const itemId = e.target.closest('li').id;
     const targetItem = todoArray.filter(todo => {
       return todo.id === Number(itemId);
     });
     targetItem[0].checked = !targetItem[0].checked;
-    e.target.closest('li').children[1].classList.toggle('todoCompleted');
+
+    e.target.closest('li').children[2].classList.toggle('todoCompleted');
     setLocalStorage(todoArray);
+    makeTodoList(todoArray);
+
+    // const activeTodos = todoArray.filter(todo => {
+    //   return todo.checked !== true;
+    // });
+    // quantity.textContent = activeTodos.length + ` item left`;
   }
 }
 
@@ -111,27 +130,17 @@ allCompleted.classList.add('allCompleted');
 allCompleted.textContent = '+';
 form.prepend(allCompleted);
 
-// allCompleted.addEventListener('click', handleAllCompleted);
-
-// function handleAllCompleted() {
-//   // return todoArray.forEach(todo => {
-//   //   todo.checked=true
-//   // });
-//   console.log(
-//     todoArray.forEach(todo => {
-//       todo.checked = true;
-//     }),
-//   );
-// }
-
-const filters = document.createElement('div');
-filters.classList.add('filterDiv');
-form.append(filters);
+const footerDiv = document.createElement('div');
+footerDiv.classList.add('footerDiv');
+form.append(footerDiv);
 
 const quantity = document.createElement('span');
-quantity.textContent = `Items left:` + todoArray.length;
-filters.appendChild(quantity);
+const activeTodos = todoArray.filter(todo => {
+  return todo.checked !== true;
+});
+quantity.textContent = activeTodos.length + ` item left`;
 
+const filterBtns = document.createElement('div');
 const btnAll = document.createElement('button');
 btnAll.type = 'button';
 btnAll.classList.add('filterBtn');
@@ -147,13 +156,21 @@ btnCompleted.type = 'button';
 btnCompleted.classList.add('filterBtn');
 btnCompleted.textContent = 'Completed';
 btnCompleted.id = 'Completed';
+filterBtns.append(btnAll, btnActive, btnCompleted);
+footerDiv.appendChild(filterBtns);
 
-filters.append(btnAll, btnActive, btnCompleted);
-filters.addEventListener('click', handleFilter);
+const btnClear = document.createElement('button');
+btnClear.type = 'button';
+btnClear.classList.add('clearBtn');
+btnClear.textContent = 'Clear completed';
+btnClear.id = 'clear';
+
+footerDiv.append(quantity, filterBtns, btnClear);
+footerDiv.addEventListener('click', handleFilter);
 
 function handleFilter(e) {
   if (e.target.id === 'All') {
-    makeTodoList(localStorage.getItem('todoList'));
+    makeTodoList(todoArray);
   }
 
   if (e.target.id === 'Active') {
@@ -170,3 +187,16 @@ function handleFilter(e) {
     makeTodoList(todos);
   }
 }
+
+// allCompleted.addEventListener('click', handleAllCompleted);
+
+// function handleAllCompleted() {
+//   // return todoArray.forEach(todo => {
+//   //   todo.checked=true
+//   // });
+//   console.log(
+//     todoArray.forEach(todo => {
+//       todo.checked = true;
+//     }),
+//   );
+// }
