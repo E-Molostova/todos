@@ -45,7 +45,6 @@ body {
   font-size: 22px;
   outline: none;
   border: none;
-  /* border-color: rgb(77, 77, 77); */
   box-shadow: rgba(0, 0, 0, 0.03) 0px -2px 1px 0px inset;
   position: relative;
 }
@@ -59,9 +58,10 @@ body {
   position: absolute;
   transform: rotate(90deg);
   left: 0px;
-  top: 30px;
-  width: 40px;
-  height: 40px;
+  top: 25px;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
   color: lightgray;
 }
 
@@ -79,6 +79,15 @@ body {
   padding: 15px;
   background-color: #fff;
   border-bottom: solid 1px lightgray;
+  height: 100%;
+}
+
+.todoItem.editable button {
+  display: none;
+}
+
+.editable {
+  display: none;
 }
 
 .custom-checkbox {
@@ -92,6 +101,7 @@ body {
   align-items: center;
   user-select: none;
 }
+
 .custom-checkbox + label::before {
   content: '';
   color: gray;
@@ -120,6 +130,14 @@ body {
 
 .description {
   padding: 15px;
+  /* white-space: normal; */
+  /* word-wrap: break-word; */
+
+  word-break: break-word;
+}
+
+.description[contenteditable] {
+  width: 100%;
 }
 
 .todoCompleted {
@@ -135,7 +153,8 @@ body {
   color: rgb(199, 28, 28);
 }
 
-.todoItem:hover .btn {
+.todoItem:hover .btn,
+.todoItem:focus .btn {
   opacity: 1;
 }
 
@@ -152,7 +171,8 @@ body {
   outline: none;
   border: none;
 }
-.filterBtn:hover {
+.filterBtn:hover,
+.filterBtn:focus {
   border-radius: 5px;
   border: solid 1px rgb(236, 128, 109);
 }

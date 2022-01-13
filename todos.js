@@ -18,7 +18,7 @@ form.appendChild(todoList);
 
 form.addEventListener('submit', handleTodoAdd);
 todoList.addEventListener('click', handleCompleteAndDelete);
-todoList.addEventListener('dblclick', handleChangeText);
+// todoList.addEventListener('dblclick', handleChangeText);
 
 let todoArray;
 
@@ -132,20 +132,8 @@ function handleCompleteAndDelete(e) {
   }
 }
 
-function handleChangeText(e) {
-  if (e.target.tagName === 'P') {
-    e.target.setAttribute('contenteditable', 'true');
-    console.log(e.target.innerText);
-
-    // text.textContent = e.target.textContent;//undefined
-
-    // setLocalStorage(todoArray);
-    // makeTodoList(todoArray);
-  }
-}
-
 label.addEventListener('click', handleAllCompleted);
-function handleAllCompleted(e) {
+function handleAllCompleted() {
   const isAnyActive = todoArray.some(todo => todo.checked === false);
 
   if (isAnyActive) {
@@ -245,7 +233,6 @@ const isAnyCompleted = checkCompleted(todoArray);
 showClear(isAnyCompleted);
 
 btnClear.addEventListener('click', handleClearCompleted);
-
 function handleClearCompleted() {
   todoArray = todoArray.filter(todo => {
     return todo.checked === false;
@@ -254,14 +241,53 @@ function handleClearCompleted() {
   makeTodoList(todoArray);
 }
 
-// const textRefs = document.querySelectorAll('.description');
-// const textArray = [...textRefs];
-// console.log(textArray);
-// // textRefs.addEventListener('dblclick', handleChangeText);
+todoList.addEventListener('dblclick', handleChangeText);
+function handleChangeText(e) {
+  if (e.target.tagName === 'P') {
+    const target = e.target;
+    const idTarget = e.target.parentNode.id;
+    const checked = e.target.parentNode.children[0].checked;
+    const btn = e.target.parentNode.children[3];
+    btn.classList.add('editable');
 
-// // function handleChangeText(e) {
-// //   console.log(e.target);
-// // }
+    target.setAttribute('contenteditable', 'true');
+
+    e.target.parentNode.children[1].style.display = 'none';
+
+    target.classList.add('wrap');
+    const editInput = document.createElement('input');
+    target.appendChild(editInput);
+    editInput.value = target.innerText;
+
+    target.innerHTML = editInput.value;
+
+    target.addEventListener('keydown', handleEnter);
+    function handleEnter(e) {
+      if (e.keyCode === 13) {
+        btn.classList.remove('editable');
+        const newTodo = {
+          id: idTarget,
+          description: target.innerHTML,
+          checked,
+        };
+        todoArray = todoArray.map(todo => {
+          if (todo.id === idTarget) {
+            todo = newTodo;
+          }
+          return todo;
+        });
+        setLocalStorage(todoArray);
+        makeTodoList(todoArray);
+      }
+    }
+
+    // e.target.parentNode.children[1].classList.add('visually-hidden');
+    // e.target.parentNode.children[3].classList.add('visually-hidden');
+  } else {
+    // e.target.parentNode.children[1].classList.remove('visually-hidden');
+    // e.target.parentNode.children[3].classList.remove('visually-hidden');
+  }
+}
 
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
