@@ -18,7 +18,7 @@ form.appendChild(todoList);
 
 form.addEventListener('submit', handleTodoAdd);
 todoList.addEventListener('click', handleCompleteAndDelete);
-// todoList.addEventListener('dblclick', handleChangeText);
+todoList.addEventListener('dblclick', handleChangeText);
 
 let todoArray;
 
@@ -26,27 +26,17 @@ let todoArray;
   ? (todoArray = [])
   : (todoArray = JSON.parse(localStorage.getItem('todoList')));
 
-function setLocalStorage(todos) {
+function setLSandControls(todos) {
   localStorage.setItem('todoList', JSON.stringify(todos));
 
   checkAndShowCompleted();
-
-  const activeTodos = todos.filter(todo => {
-    return todo.checked !== true;
-  });
-  quantity.textContent = activeTodos.length + ` item left`;
-
-  if (todoArray.every(todo => todo.checked === true)) {
-    input.classList.add('extra');
-  } else {
-    input.classList.remove('extra');
-  }
+  showQuantityActiveTodo();
+  checkIsCompleted();
 }
 
 makeTodoList(todoArray);
 
 function handleTodoAdd(e) {
-  e.stopPropagation();
   e.preventDefault();
 
   const newTodo = {
@@ -54,11 +44,8 @@ function handleTodoAdd(e) {
     description: input.value,
     checked: false,
   };
-
   todoArray.push(newTodo);
-  setLocalStorage(todoArray);
-
-  makeTodoList(todoArray);
+  renderTodo();
 
   form.reset();
 }
@@ -100,6 +87,11 @@ function makeTodoList(array) {
   todoList.append(...todoItems);
 }
 
+function renderTodo() {
+  setLSandControls(todoArray);
+  makeTodoList(todoArray);
+}
+
 function handleCompleteAndDelete(e) {
   if (e.target.nodeName === 'BUTTON') {
     const itemId = e.target.parentNode.id;
@@ -107,8 +99,7 @@ function handleCompleteAndDelete(e) {
     todoArray = todoArray.filter(todo => {
       return todo.id !== itemId;
     });
-    setLocalStorage(todoArray);
-    makeTodoList(todoArray);
+    renderTodo();
   }
 
   if (e.target.nodeName === 'LABEL') {
@@ -116,12 +107,9 @@ function handleCompleteAndDelete(e) {
     const targetItem = todoArray.filter(todo => {
       return todo.id === itemId;
     });
-
     targetItem[0].checked = !targetItem[0].checked;
-
     e.target.closest('li').children[2].classList.toggle('todoCompleted');
-    setLocalStorage(todoArray);
-    makeTodoList(todoArray);
+    renderTodo();
   }
 }
 
@@ -134,15 +122,13 @@ function handleAllCompleted() {
       todo.checked = true;
       return todo;
     });
-    setLocalStorage(todoArray);
-    makeTodoList(todoArray);
+    renderTodo();
   } else {
     todoArray = todoArray.map(todo => {
       todo.checked = false;
       return todo;
     });
-    setLocalStorage(todoArray);
-    makeTodoList(todoArray);
+    renderTodo();
   }
 }
 
@@ -227,15 +213,30 @@ function checkAndShowCompleted() {
   const isAnyCompleted = checkCompleted(todoArray);
   showClear(isAnyCompleted);
 }
+
 checkAndShowCompleted();
+
+function showQuantityActiveTodo() {
+  const activeTodos = todoArray.filter(todo => {
+    return todo.checked !== true;
+  });
+  quantity.textContent = activeTodos.length + ` item left`;
+}
+
+function checkIsCompleted() {
+  if (todoArray.every(todo => todo.checked === true)) {
+    input.classList.add('extra');
+  } else {
+    input.classList.remove('extra');
+  }
+}
 
 btnClear.addEventListener('click', handleClearCompleted);
 function handleClearCompleted() {
   todoArray = todoArray.filter(todo => {
     return todo.checked === false;
   });
-  setLocalStorage(todoArray);
-  makeTodoList(todoArray);
+  renderTodo();
 }
 
 todoList.addEventListener('dblclick', handleChangeText);
@@ -253,6 +254,7 @@ function handleChangeText(e) {
 
     target.classList.add('wrap');
     const editInput = document.createElement('input');
+    editInput.setAttribute('autofocus', 'true');
     target.appendChild(editInput);
     editInput.value = target.innerText;
 
@@ -281,8 +283,7 @@ function handleChangeText(e) {
         }
         return todo;
       });
-      setLocalStorage(todoArray);
-      makeTodoList(todoArray);
+      renderTodo();
     }
   }
 }
