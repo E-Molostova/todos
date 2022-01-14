@@ -62,13 +62,10 @@ function createTodoList(todos) {
     return itemTodo;
   });
   todoListRef.append(...todoItems);
-
   return todoListRef;
 }
 
 function createFooterForm() {
-  const todoArray = parseLocalStorage();
-
   const footerDiv = document.createElement('div');
   footerDiv.classList.add('footerDiv');
   form.append(footerDiv);
@@ -122,7 +119,6 @@ function setLocalStorageAndChecks(todos) {
 function handleTodoAdd(e) {
   e.preventDefault();
 
-  const todoArray = parseLocalStorage();
   const input = document.querySelector('.mainInput');
 
   const newTodo = {
@@ -210,9 +206,7 @@ function handleFilter(e) {
 
 function handleClearCompleted() {
   let todoArray = parseLocalStorage();
-  todoArray = todoArray.filter(todo => {
-    return todo.checked === false;
-  });
+  todoArray = todoArray.filter(todo => todo.checked === false);
   setLocalStorageAndChecks(todoArray);
   createTodoList(todoArray);
 }
