@@ -1,9 +1,4 @@
 h1,
-h2,
-h3,
-h4,
-h5,
-h6,
 p {
   margin: 0;
   padding: 0;
@@ -58,6 +53,7 @@ body {
 
 .mainInput::placeholder {
   font-size: 22px;
+  color: rgb(177, 172, 172);
 }
 
 .mainInput + label::before {
@@ -137,9 +133,6 @@ body {
 
 .description {
   padding: 15px;
-  /* white-space: normal; */
-  /* word-wrap: break-word; */
-
   word-break: break-word;
 }
 
@@ -170,18 +163,21 @@ body {
   background-color: #fff;
   display: flex;
   justify-content: space-between;
-  padding: 15px;
+  align-items: baseline;
+  padding: 10px;
 }
 
 .filterBtn {
   background-color: #fff;
   outline: none;
   border: none;
+  margin: 5px;
 }
 .filterBtn:hover,
 .filterBtn:focus {
   border-radius: 5px;
-  border: solid 1px rgb(236, 128, 109);
+
+  outline: solid 1px rgb(236, 128, 109);
 }
 
 .clearBtn {

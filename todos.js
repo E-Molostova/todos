@@ -55,7 +55,7 @@ function createTodoList(todos) {
     const button = document.createElement('button');
     button.type = 'button';
     button.classList.add('btn');
-    button.textContent = 'x';
+    button.textContent = '×';
 
     itemTodo.append(completed, label, text, button);
 
@@ -113,9 +113,10 @@ function parseLocalStorage() {
 function setLocalStorageAndChecks(todos) {
   localStorage.setItem('todoList', JSON.stringify(todos));
 
-  checkAndShowCompleted();
-  showQuantityActiveTodo(todos);
   checkIsCompleted(todos);
+  showQuantityActiveTodo(todos);
+  checkAndShowCompleted();
+  checkToShowFooter(todos);
 }
 
 function handleTodoAdd(e) {
@@ -286,6 +287,16 @@ function showQuantityActiveTodo(todos) {
   }
 }
 
+function checkToShowFooter(todos) {
+  const footerForm = document.querySelector('.footerDiv');
+
+  if (todos.length === 0) {
+    footerForm.style.display = 'none';
+  } else {
+    footerForm.style.display = 'flex';
+  }
+}
+
 function checkIsCompleted(todos) {
   const inputRef = document.querySelector('.mainInput');
 
@@ -304,11 +315,12 @@ function uuidv4() {
     ).toString(16),
   );
 }
-const todoArray = parseLocalStorage();
+
 const form = createForm();
+const todoArray = parseLocalStorage();
 const todoList = createTodoList(todoArray);
 const footerDiv = createFooterForm();
-checkAndShowCompleted();
+setLocalStorageAndChecks(todoArray);
 
 const btnClearRef = document.querySelector('.clearBtn');
 const labelRef = document.querySelector('.label');
