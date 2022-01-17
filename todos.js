@@ -233,6 +233,12 @@ function handleChangeText(e) {
     editInput.value = target.innerText;
     target.innerText = editInput.value;
 
+    let [r, s] = [document.createRange(), window.getSelection()];
+    r.selectNodeContents(e.target);
+    r.collapse(false);
+    s.removeAllRanges();
+    s.addRange(r);
+
     target.addEventListener('keydown', handleEnter);
     target.addEventListener('blur', handleBlur);
     function handleEnter(e) {
