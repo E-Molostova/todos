@@ -223,7 +223,6 @@ function handleChangeText(e) {
     btn.classList.add('editable');
 
     target.setAttribute('contenteditable', 'true');
-    target.classList.add('wrap');
 
     const editInput = document.createElement('input');
     target.appendChild(editInput);
@@ -233,8 +232,13 @@ function handleChangeText(e) {
     target.addEventListener('keydown', handleEnter);
     target.addEventListener('blur', handleBlur);
     function handleEnter(e) {
+      const todoArray = parseLocalStorage();
       if (e.keyCode === 13) {
         handleChanges();
+      }
+      if (e.keyCode === 27) {
+        setLocalStorageAndChecks(todoArray);
+        createTodoList(todoArray);
       }
     }
     function handleBlur(e) {

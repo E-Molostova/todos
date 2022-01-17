@@ -135,6 +135,7 @@ body {
 .description {
   padding: 15px;
   word-break: break-word;
+  /* word-break: keep-all; */
 }
 
 .description[contenteditable] {
@@ -142,6 +143,16 @@ body {
   margin-left: 40px;
   outline: none;
   box-shadow: inset 0px 0px 10px 0px gray;
+  /* word-break: normal;
+   */
+
+  white-space: pre;
+
+  /* word-break: normal; */
+  /* height: 55px; */
+  /* text-align: -webkit-match-parent; */
+  /* list-style-position: outside;
+  display: block; */
 }
 
 .todoCompleted {
