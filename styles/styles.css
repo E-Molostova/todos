@@ -135,7 +135,7 @@ body {
 .description {
   padding: 15px;
   word-break: break-word;
-  /* word-break: keep-all; */
+  padding-right: 5px;
 }
 
 .description[contenteditable] {
