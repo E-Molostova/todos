@@ -119,6 +119,7 @@ function setLocalStorageAndChecks(todos) {
 function handleTodoAdd(e) {
   e.preventDefault();
 
+  const todoArray = parseLocalStorage();
   const input = document.querySelector('.mainInput');
 
   const newTodo = {
@@ -126,9 +127,10 @@ function handleTodoAdd(e) {
     description: input.value,
     checked: false,
   };
-  todoArray.push(newTodo);
-  setLocalStorageAndChecks(todoArray);
-  createTodoList(todoArray);
+
+  const newTodoArray = [...todoArray, newTodo];
+  setLocalStorageAndChecks(newTodoArray);
+  createTodoList(newTodoArray);
 
   form.reset();
 }
@@ -139,45 +141,44 @@ function handleCompleteAndDelete(e) {
   if (e.target.nodeName === 'BUTTON') {
     const itemId = e.target.parentNode.id;
 
-    todoArray = todoArray.filter(todo => {
+    const newTodoArray = todoArray.filter(todo => {
       return todo.id !== itemId;
     });
-    setLocalStorageAndChecks(todoArray);
-    createTodoList(todoArray);
+    setLocalStorageAndChecks(newTodoArray);
+    createTodoList(newTodoArray);
   }
 
   if (e.target.nodeName === 'LABEL') {
-    const itemId = e.target.closest('li').id;
-
-    const targetItem = todoArray.filter(todo => {
-      return todo.id === itemId;
+    const targetId = e.target.closest('li').id;
+    const newTodoArray = todoArray.map(todo => {
+      if (todo.id === targetId) {
+        todo.checked = !todo.checked;
+      }
+      return todo;
     });
-    targetItem[0].checked = !targetItem[0].checked;
-    e.target.closest('li').children[2].classList.toggle('todoCompleted');
-
-    setLocalStorageAndChecks(todoArray);
-    createTodoList(todoArray);
+    setLocalStorageAndChecks(newTodoArray);
+    createTodoList(newTodoArray);
   }
 }
 
 function handleAllCompleted() {
-  let todoArray = parseLocalStorage();
+  const todoArray = parseLocalStorage();
   const isAnyActive = todoArray.some(todo => todo.checked === false);
 
   if (isAnyActive) {
-    todoArray = todoArray.map(todo => {
+    const newTodoArray = todoArray.map(todo => {
       todo.checked = true;
       return todo;
     });
-    setLocalStorageAndChecks(todoArray);
-    createTodoList(todoArray);
+    setLocalStorageAndChecks(newTodoArray);
+    createTodoList(newTodoArray);
   } else {
-    todoArray = todoArray.map(todo => {
+    const newTodoArray = todoArray.map(todo => {
       todo.checked = false;
       return todo;
     });
-    setLocalStorageAndChecks(todoArray);
-    createTodoList(todoArray);
+    setLocalStorageAndChecks(newTodoArray);
+    createTodoList(newTodoArray);
   }
 }
 
@@ -205,31 +206,29 @@ function handleFilter(e) {
 }
 
 function handleClearCompleted() {
-  let todoArray = parseLocalStorage();
-  todoArray = todoArray.filter(todo => todo.checked === false);
-  setLocalStorageAndChecks(todoArray);
-  createTodoList(todoArray);
+  const todoArray = parseLocalStorage();
+  const newTodoArray = todoArray.filter(todo => todo.checked === false);
+  setLocalStorageAndChecks(newTodoArray);
+  createTodoList(newTodoArray);
 }
 
 function handleChangeText(e) {
   if (e.target.tagName === 'P') {
     const target = e.target;
-    const idTarget = e.target.parentNode.id;
-    const checked = e.target.parentNode.children[0].checked;
+    const targetId = e.target.parentNode.id;
+    const isChecked = e.target.parentNode.children[0].checked;
+    const label = e.target.parentNode.children[1];
+    label.style.display = 'none';
     const btn = e.target.parentNode.children[3];
     btn.classList.add('editable');
 
     target.setAttribute('contenteditable', 'true');
-
-    e.target.parentNode.children[1].style.display = 'none';
-
     target.classList.add('wrap');
+
     const editInput = document.createElement('input');
-    editInput.setAttribute('autofocus', 'true');
     target.appendChild(editInput);
     editInput.value = target.innerText;
-
-    target.innerHTML = editInput.value;
+    target.innerText = editInput.value;
 
     target.addEventListener('keydown', handleEnter);
     target.addEventListener('blur', handleBlur);
@@ -245,18 +244,18 @@ function handleChangeText(e) {
       let todoArray = parseLocalStorage();
       btn.classList.remove('editable');
       const newTodo = {
-        id: idTarget,
-        description: target.innerHTML,
-        checked,
+        id: targetId,
+        description: target.innerText,
+        checked: isChecked,
       };
-      todoArray = todoArray.map(todo => {
-        if (todo.id === idTarget) {
+      const newTodoArray = todoArray.map(todo => {
+        if (todo.id === targetId) {
           todo = newTodo;
         }
         return todo;
       });
-      setLocalStorageAndChecks(todoArray);
-      createTodoList(todoArray);
+      setLocalStorageAndChecks(newTodoArray);
+      createTodoList(newTodoArray);
     }
   }
 }
@@ -298,6 +297,14 @@ function checkIsCompleted(todos) {
     inputRef.classList.add('extra');
   } else {
     inputRef.classList.remove('extra');
+  }
+
+  const labelRef = document.querySelector('.label');
+
+  if (todos.length === 0) {
+    labelRef.style.display = 'none';
+  } else {
+    labelRef.style.display = 'flex';
   }
 }
 
