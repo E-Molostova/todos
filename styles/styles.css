@@ -43,12 +43,12 @@ body {
   width: 550px;
   height: 65px;
   padding: 16px;
+  color: rgb(77, 77, 77);
   padding-left: 60px;
   font-size: 22px;
   outline: none;
   border: none;
   box-shadow: rgba(0, 0, 0, 0.03) 0px -2px 1px 0px inset;
-  position: relative;
 }
 
 .mainInput::placeholder {
@@ -84,10 +84,6 @@ body {
   background-color: #fff;
   border-bottom: solid 1px lightgray;
   height: 100%;
-}
-
-.todoItem.editable button {
-  display: none;
 }
 
 .editable {
@@ -158,6 +154,7 @@ body {
   background-color: inherit;
   opacity: 0;
   color: rgb(199, 28, 28);
+  padding-right: 15px;
 }
 
 .todoItem:hover .btn,
