@@ -215,17 +215,21 @@ function handleClearCompleted() {
 function handleChangeText(e) {
   if (e.target.tagName === 'P') {
     const target = e.target;
-    const targetId = e.target.parentNode.id;
-    const isChecked = e.target.parentNode.children[0].checked;
-    const label = e.target.parentNode.children[1];
+    const targetItem = e.target.parentNode;
+    const targetId = targetItem.id;
+    const isChecked = targetItem.children[0].checked;
+    const label = targetItem.children[1];
     label.style.display = 'none';
-    const btn = e.target.parentNode.children[3];
+    const btn = targetItem.children[3];
     btn.classList.add('editable');
 
     target.setAttribute('contenteditable', 'true');
 
     const editInput = document.createElement('input');
+    // editInput.setAttribute('autofocus', 'true');
     target.appendChild(editInput);
+    target.focus();
+
     editInput.value = target.innerText;
     target.innerText = editInput.value;
 
