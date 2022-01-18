@@ -249,7 +249,7 @@ function handleChangeText(e) {
         createTodoList(todoArray);
       }
     }
-    function handleBlur(e) {
+    function handleBlur() {
       handleChanges();
     }
     function handleChanges() {

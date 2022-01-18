@@ -156,7 +156,7 @@ class App {
       this.setLocalStorageAndChecks(newTodoArray);
       this.createTodoList(newTodoArray);
     } else {
-      alert('Enter task please!');
+      alert('Write task description please!');
     }
 
     const form = input.parentNode;
@@ -246,10 +246,13 @@ class App {
       s.removeAllRanges();
       s.addRange(r);
 
+      const todoArray = this.parseLocalStorage();
+
       target.addEventListener('keydown', handleEnter);
       target.addEventListener('blur', handleBlur);
       function handleEnter(e) {
-        const todoArray = this.parseLocalStorage();
+        console.log(e.keyCode);
+        // const todoArray = this.parseLocalStorage();
         if (e.keyCode === 13) {
           handleChanges();
         }
@@ -262,7 +265,7 @@ class App {
         handleChanges();
       }
       function handleChanges() {
-        let todoArray = this.parseLocalStorage();
+        // let todoArray = this.parseLocalStorage();
         btn.classList.remove('editable');
         const newTodo = {
           id: targetId,
@@ -275,46 +278,12 @@ class App {
           }
           return todo;
         });
+        console.log(newTodoArray);
         this.setLocalStorageAndChecks(newTodoArray);
         this.createTodoList(newTodoArray);
       }
     }
   }
-  //   handleEnter(event) {
-  //     console.log(event);
-  //     const todoArray = this.parseLocalStorage();
-  //     if (event.keyCode === 13) {
-  //       this.handleChanges();
-  //     }
-  //     if (event.keyCode === 27) {
-  //       this.setLocalStorageAndChecks(todoArray);
-  //       this.createTodoList(todoArray);
-  //     }
-  //   }
-  //   handleBlur() {
-  //     this.handleChanges();
-  //   }
-  //   handleChanges(target) {
-  //     let todoArray = this.parseLocalStorage();
-  //     console.log(target);
-  //     const btn = e.target.parentNode.children[3];
-  //     const targetId = e.target.parentNode.id;
-  //     const isChecked = e.target.parentNode.children[0].checked;
-  //     btn.classList.remove('editable');
-  //     const newTodo = {
-  //       id: targetId,
-  //       description: target.innerText,
-  //       checked: isChecked,
-  //     };
-  //     const newTodoArray = todoArray.map(todo => {
-  //       if (todo.id === targetId) {
-  //         todo = newTodo;
-  //       }
-  //       return todo;
-  //     });
-  //     this.setLocalStorageAndChecks(newTodoArray);
-  //     this.createTodoList(newTodoArray);
-  //   }
 
   handleFilter(e) {
     const todoArray = this.parseLocalStorage();
