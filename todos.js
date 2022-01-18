@@ -227,10 +227,10 @@ function handleChangeText(e) {
 
     const editInput = document.createElement('input');
     target.appendChild(editInput);
+    editInput.focus();
     editInput.value = target.innerText;
     target.innerText = editInput.value;
 
-    editInput.focus();
     let [r, s] = [document.createRange(), window.getSelection()];
     r.selectNodeContents(e.target);
     r.collapse(false);
