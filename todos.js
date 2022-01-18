@@ -338,9 +338,9 @@ setLocalStorageAndChecks(todoArray);
 const btnClearRef = document.querySelector('.clearBtn');
 const labelRef = document.querySelector('.label');
 
-form.addEventListener('submit', handleTodoAdd);
-todoList.addEventListener('click', handleCompleteAndDelete);
+// form.addEventListener('submit', handleTodoAdd);
+// todoList.addEventListener('click', handleCompleteAndDelete);
 todoList.addEventListener('dblclick', handleChangeText);
-labelRef.addEventListener('click', handleAllCompleted);
-footerDiv.addEventListener('click', handleFilter);
-btnClearRef.addEventListener('click', handleClearCompleted);
+// labelRef.addEventListener('click', handleAllCompleted);
+// footerDiv.addEventListener('click', handleFilter);
+// btnClearRef.addEventListener('click', handleClearCompleted);
