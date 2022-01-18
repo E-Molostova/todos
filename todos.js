@@ -226,13 +226,11 @@ function handleChangeText(e) {
     target.setAttribute('contenteditable', 'true');
 
     const editInput = document.createElement('input');
-    const length = e.target.textContent.length;
     target.appendChild(editInput);
-    editInput.focus();
-    editInput.setSelectionRange(length, length);
     editInput.value = target.innerText;
     target.innerText = editInput.value;
 
+    editInput.focus();
     let [r, s] = [document.createRange(), window.getSelection()];
     r.selectNodeContents(e.target);
     r.collapse(false);
