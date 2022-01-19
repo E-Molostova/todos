@@ -8,11 +8,47 @@ function uuidv4() {
 }
 
 class TodoItem {
-  constructor(text) {
-    this.id = uuidv4();
-    this.description = text;
-    this.checked = false;
-    this.handleEnter = this.handleEnter.bind(this);
+  constructor({ id, description, checked }) {
+    this.item = this.createLi();
+    this.id = id;
+    this.description = description;
+    this.checked = checked;
+  }
+  //   get item() {
+  //     return this._item;
+  //   }
+  createLi() {
+    const itemTodo = document.createElement('li');
+    itemTodo.classList.add('todoItem');
+    itemTodo.id = this.id;
+
+    const completed = document.createElement('input');
+    completed.type = 'checkbox';
+    completed.id = 'check';
+    completed.checked = this.checked;
+    this.checked
+      ? completed.classList.add('custom-checkbox', 'extra')
+      : completed.classList.add('custom-checkbox');
+
+    const label = document.createElement('label');
+    label.setAttribute('for', 'check');
+    label.setAttribute('id', 'label');
+
+    const text = document.createElement('p');
+    this.checked
+      ? text.classList.add('description', 'todoCompleted')
+      : text.classList.add('description');
+    text.textContent = this.description;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.classList.add('btn');
+    button.textContent = '×';
+
+    itemTodo.append(completed, label, text, button);
+    // console.log(itemTodo);
+    itemTodo.addEventListener('dblclick', this.handleChangeText);
+    return itemTodo;
   }
 
   handleChangeText(e) {
@@ -39,7 +75,7 @@ class TodoItem {
       s.addRange(r);
 
       console.log(this.handleEnter);
-
+      console.log(this.handleBlur);
       target.addEventListener('keydown', this.handleEnter);
       target.addEventListener('blur', this.handleBlur);
     }
@@ -127,49 +163,33 @@ class App {
     const todoList = document.createElement('ul');
     todoList.classList.add('todoList');
 
-    const handleChange = new TodoItem().handleChangeText;
     todoList.addEventListener('click', this.handleCompleteAndDelete.bind(this));
-    todoList.addEventListener('dblclick', handleChange);
+    // todoList.addEventListener('dblclick', handleChange);
     form.appendChild(todoList);
     return form;
   }
 
   createTodoList(array) {
     const todoListRef = document.querySelector('.todoList');
+
     if (todoListRef) {
       todoListRef.innerHTML = '';
+
       const todoItems = array.map(todo => {
-        const itemTodo = document.createElement('li');
-        itemTodo.classList.add('todoItem');
-        itemTodo.id = todo.id;
-
-        const completed = document.createElement('input');
-        completed.type = 'checkbox';
-        completed.id = 'check';
-        completed.checked = todo.checked;
-        todo.checked
-          ? completed.classList.add('custom-checkbox', 'extra')
-          : completed.classList.add('custom-checkbox');
-
-        const label = document.createElement('label');
-        label.setAttribute('for', 'check');
-        label.setAttribute('id', 'label');
-
-        const text = document.createElement('p');
-        todo.checked
-          ? text.classList.add('description', 'todoCompleted')
-          : text.classList.add('description');
-        text.textContent = todo.description;
-
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.classList.add('btn');
-        button.textContent = '×';
-
-        itemTodo.append(completed, label, text, button);
-
-        return itemTodo;
+        const itemTodo = new TodoItem({
+          id: todo.id,
+          description: todo.description,
+          checked: todo.checked,
+        });
+        const item = {
+          id: itemTodo.id,
+          description: itemTodo.description,
+          checked: itemTodo.checked,
+        };
+        // console.log(item);
+        return itemTodo.createLi(item);
       });
+      //   console.log(todoItems);
       todoListRef.append(...todoItems);
       return todoListRef;
     }
@@ -220,9 +240,18 @@ class App {
     e.preventDefault();
     const input = document.querySelector('#mainInput');
     if (input.value.trim() !== '') {
-      const newTodo = new TodoItem(input.value.trim());
+      const newTodo = new TodoItem({
+        id: uuidv4(),
+        description: input.value.trim(),
+        checked: false,
+      });
+      const itemToAdd = {
+        id: newTodo.id,
+        description: newTodo.description,
+        checked: newTodo.checked,
+      };
       const todoArray = this.parseLocalStorage();
-      const newTodoArray = [...todoArray, newTodo];
+      const newTodoArray = [...todoArray, itemToAdd];
       this.setLocalStorageAndChecks(newTodoArray);
       this.createTodoList(newTodoArray);
     } else {
