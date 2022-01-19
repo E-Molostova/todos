@@ -221,12 +221,8 @@ class App {
 
   handleChangeText(e) {
     if (e.target.tagName === 'P') {
-      //   const event = e;
       const target = e.target;
-      console.log(e.target);
       const targetItem = e.target.parentNode;
-      const targetId = targetItem.id;
-      const isChecked = targetItem.children[0].checked;
       const label = targetItem.children[1];
       label.style.display = 'none';
       const btn = targetItem.children[3];
@@ -246,43 +242,45 @@ class App {
       s.removeAllRanges();
       s.addRange(r);
 
-      const todoArray = this.parseLocalStorage();
-
-      target.addEventListener('keydown', handleEnter);
-      target.addEventListener('blur', handleBlur);
-      function handleEnter(e) {
-        console.log(e.keyCode);
-        // const todoArray = this.parseLocalStorage();
-        if (e.keyCode === 13) {
-          handleChanges();
-        }
-        if (e.keyCode === 27) {
-          this.setLocalStorageAndChecks(todoArray);
-          this.createTodoList(todoArray);
-        }
-      }
-      function handleBlur(e) {
-        handleChanges();
-      }
-      function handleChanges() {
-        // let todoArray = this.parseLocalStorage();
-        btn.classList.remove('editable');
-        const newTodo = {
-          id: targetId,
-          description: target.innerText,
-          checked: isChecked,
-        };
-        const newTodoArray = todoArray.map(todo => {
-          if (todo.id === targetId) {
-            todo = newTodo;
-          }
-          return todo;
-        });
-        console.log(newTodoArray);
-        this.setLocalStorageAndChecks(newTodoArray);
-        this.createTodoList(newTodoArray);
-      }
+      target.addEventListener('keydown', this.handleEnter.bind(this));
+      target.addEventListener('blur', this.handleBlur.bind(this));
     }
+  }
+  handleEnter(e) {
+    const todoArray = this.parseLocalStorage();
+    if (e.keyCode === 13) {
+      this.handleChanges(e);
+    }
+    if (e.keyCode === 27) {
+      this.setLocalStorageAndChecks(todoArray);
+      this.createTodoList(todoArray);
+    }
+  }
+
+  handleBlur(e) {
+    this.handleChanges(e);
+  }
+
+  handleChanges(e) {
+    const targetId = e.target.parentNode.id;
+    const isChecked = e.target.parentNode.children[0].checked;
+    const btn = e.target.parentNode.children[3];
+    btn.classList.remove('editable');
+
+    const todoArray = this.parseLocalStorage();
+    const newTodo = {
+      id: targetId,
+      description: e.target.innerText,
+      checked: isChecked,
+    };
+    const newTodoArray = todoArray.map(todo => {
+      if (todo.id === targetId) {
+        todo = newTodo;
+      }
+      return todo;
+    });
+    this.setLocalStorageAndChecks(newTodoArray);
+    this.createTodoList(newTodoArray);
   }
 
   handleFilter(e) {
