@@ -66,7 +66,7 @@ class TodoService extends MyEventEmitter {
       alert('Write task description please!');
     }
 
-    const form = input.parentNode;
+    const form = input.closest('form');
     form.reset();
   }
 
@@ -163,6 +163,10 @@ class Form {
     todoList.classList.add('todoList');
     todoList.addEventListener('click', todoService.deleteTodo);
     form.appendChild(todoList);
+
+    const footerDiv = document.createElement('div');
+    footerDiv.classList.add('footerDiv');
+    form.appendChild(footerDiv);
   }
 }
 
@@ -294,10 +298,9 @@ class App {
 
   render() {
     this.todoArray = todoService.parseLocalStorage();
-    this.form;
     this.createTodoList(this.todoArray);
-    this.checksForRefresh(this.todoArray);
     this.createFooterForm(this.todoArray);
+    this.checksForRefresh(this.todoArray);
   }
 
   createTodoList(array) {
@@ -314,15 +317,12 @@ class App {
         return itemTodo.item;
       });
       todoListRef.append(...todoItems);
-      // return todoListRef;
     }
   }
 
   createFooterForm(array) {
-    const footerDiv = document.createElement('div');
-    footerDiv.classList.add('footerDiv');
-    const form = document.querySelector('.form');
-    form.append(footerDiv);
+    const footerDivRef = document.querySelector('.footerDiv');
+    footerDivRef.innerHTML = '';
 
     const quantity = document.createElement('span');
     const activeTodos = array.filter(todo => todo.checked !== true);
@@ -354,9 +354,7 @@ class App {
     btnClear.id = 'clear';
     btnClear.addEventListener('click', todoService.handleClearCompleted);
 
-    footerDiv.innerHTML = '';
-    footerDiv.append(quantity, filterBtns, btnClear);
-    // return footerDiv;
+    footerDivRef.append(quantity, filterBtns, btnClear);
   }
 
   checksForRefresh(array) {
