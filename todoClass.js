@@ -31,38 +31,26 @@ class MyEventEmitter {
       this.events[event].forEach(listener => listener.apply(this, args));
     }
   }
-  // once(event, listener) {
-  //   const remove = this.on(event, (...args) => {
-  //     remove();
-  //     listener.apply(this, args);
-  //   });
-  // }
 }
 
 class TodoService extends MyEventEmitter {
   constructor() {
+    super();
     this.on('LocalStorageChange', () => {
-      App.render();
+      todoApp.render();
     });
   }
 
-  static parseLocalStorage() {
+  parseLocalStorage() {
     return JSON.parse(localStorage.getItem('todoList')) || [];
   }
 
-  static setLocalStorage(array) {
+  setLocalStorage(array) {
     localStorage.setItem('todoList', JSON.stringify(array));
-
-    // localStorage.emit('LocalStorageChange');
-    const todoArray = this.parseLocalStorage();
-    // todoArray.emit('LocalStorageChange', () => {
-    // App.render();
-    // });
-
-    //
+    this.emit('LocalStorageChange');
   }
 
-  static addTodo(e) {
+  addTodo(e) {
     e.preventDefault();
     const input = document.querySelector('#mainInput');
     if (input.value.trim() !== '') {
@@ -71,11 +59,9 @@ class TodoService extends MyEventEmitter {
         description: input.value.trim(),
         checked: false,
       };
-      const todoArray = TodoService.parseLocalStorage();
+      const todoArray = todoService.parseLocalStorage();
       const newTodoArray = [...todoArray, newTodo];
-      TodoService.setLocalStorage(newTodoArray);
-      todoArray.emit('LocalStorageChange');
-      // App.createTodoList(newTodoArray);
+      todoService.setLocalStorage(newTodoArray);
     } else {
       alert('Write task description please!');
     }
@@ -84,17 +70,16 @@ class TodoService extends MyEventEmitter {
     form.reset();
   }
 
-  static deleteTodo(e) {
+  deleteTodo(e) {
     if (e.target.nodeName === 'BUTTON') {
       const itemId = e.target.parentNode.id;
-      let todoArray = TodoService.parseLocalStorage();
+      let todoArray = todoService.parseLocalStorage();
       const newTodoArray = todoArray.filter(todo => todo.id !== itemId);
-      TodoService.setLocalStorage(newTodoArray);
-      // App.createTodoList(newTodoArray);
+      todoService.setLocalStorage(newTodoArray);
     }
   }
-  static handleAllCompleted() {
-    const todoArray = TodoService.parseLocalStorage();
+  handleAllCompleted() {
+    const todoArray = todoService.parseLocalStorage();
     const isAnyActive = todoArray.some(todo => todo.checked === false);
 
     if (isAnyActive) {
@@ -102,34 +87,32 @@ class TodoService extends MyEventEmitter {
         todo.checked = true;
         return todo;
       });
-      TodoService.setLocalStorage(newTodoArray);
-      // App.createTodoList(newTodoArray);
+      todoService.setLocalStorage(newTodoArray);
     } else {
       const newTodoArray = todoArray.map(todo => {
         todo.checked = false;
         return todo;
       });
-      TodoService.setLocalStorage(newTodoArray);
-      // App.createTodoList(newTodoArray);
+      todoService.setLocalStorage(newTodoArray);
     }
   }
 
-  static handleFilter(e) {
-    const todoArray = TodoService.parseLocalStorage();
+  handleFilter(e) {
+    const todoArray = todoService.parseLocalStorage();
 
     switch (e.target.id) {
       case 'All':
-        App.createTodoList(todoArray);
+        todoApp.createTodoList(todoArray);
         break;
 
       case 'Active':
         const todos = todoArray.filter(todo => todo.checked === false);
-        App.createTodoList(todos);
+        todoApp.createTodoList(todos);
         break;
 
       case 'Completed':
         const todosToShow = todoArray.filter(todo => todo.checked === true);
-        App.createTodoList(todosToShow);
+        todoApp.createTodoList(todosToShow);
         break;
 
       default:
@@ -137,13 +120,14 @@ class TodoService extends MyEventEmitter {
     }
   }
 
-  static handleClearCompleted() {
-    const todoArray = TodoService.parseLocalStorage();
+  handleClearCompleted() {
+    const todoArray = todoService.parseLocalStorage();
     const newTodoArray = todoArray.filter(todo => todo.checked === false);
-    TodoService.setLocalStorage(newTodoArray);
-    // App.createTodoList(newTodoArray);
+    todoService.setLocalStorage(newTodoArray);
   }
 }
+
+const todoService = new TodoService();
 
 class Form {
   constructor() {
@@ -167,18 +151,16 @@ class Form {
     input.placeholder = 'What needs to be done?';
     input.classList.add('mainInput');
 
-    form.addEventListener('submit', TodoService.addTodo);
-
     const label = document.createElement('label');
     label.classList.add('label');
     label.setAttribute('for', 'mainInput');
-    label.addEventListener('click', TodoService.handleAllCompleted);
+    label.addEventListener('click', todoService.handleAllCompleted);
     form.append(input, label);
+    form.addEventListener('submit', todoService.addTodo);
 
     const todoList = document.createElement('ul');
     todoList.classList.add('todoList');
-
-    todoList.addEventListener('click', TodoService.deleteTodo);
+    todoList.addEventListener('click', todoService.deleteTodo);
     form.appendChild(todoList);
     return form;
   }
@@ -221,22 +203,14 @@ class TodoItem {
     button.textContent = '×';
 
     itemTodo.append(completed, label, text, button);
-
     itemTodo.addEventListener('click', this.handleCompleteTodo.bind(this));
     itemTodo.addEventListener('dblclick', this.handleChangeText.bind(this));
     return itemTodo;
   }
 
-  // addTodo() {
-  //   const todoArray = TodoService.parseLocalStorage;
-  //   todoArray.emit('LocalStorageChenge');
-  // }
-
-  // deleteTodo(e) {}
-
   handleCompleteTodo(e) {
     if (e.target.nodeName === 'LABEL') {
-      const todoArray = TodoService.parseLocalStorage();
+      const todoArray = todoService.parseLocalStorage();
 
       const targetId = e.target.closest('li').id;
       const newTodoArray = todoArray.map(todo => {
@@ -246,8 +220,7 @@ class TodoItem {
         return todo;
       });
 
-      TodoService.setLocalStorage(newTodoArray);
-      // App.createTodoList(newTodoArray);
+      todoService.setLocalStorage(newTodoArray);
     }
   }
 
@@ -285,9 +258,8 @@ class TodoItem {
     }
 
     if (e.keyCode === 27) {
-      const todoArray = TodoService.parseLocalStorage();
-      TodoService.setLocalStorage(todoArray);
-      // App.createTodoList(todoArray);
+      const todoArray = todoService.parseLocalStorage();
+      todoService.setLocalStorage(todoArray);
     }
   }
 
@@ -301,7 +273,7 @@ class TodoItem {
     const btn = e.target.parentNode.children[3];
     btn.classList.remove('editable');
 
-    const todoArray = TodoService.parseLocalStorage();
+    const todoArray = todoService.parseLocalStorage();
     const newTodo = {
       id: targetId,
       description: e.target.innerText,
@@ -314,27 +286,24 @@ class TodoItem {
       return todo;
     });
 
-    TodoService.setLocalStorage(newTodoArray);
-    // App.createTodoList(newTodoArray);
+    todoService.setLocalStorage(newTodoArray);
   }
 }
 
 class App {
   constructor() {
-    this.todoArray = JSON.parse(localStorage.getItem('todoList')) || [];
     this.form = new Form();
   }
 
   render() {
+    this.todoArray = todoService.parseLocalStorage();
     this.form;
     this.createTodoList(this.todoArray);
-    this.createFooterForm();
-    TodoService.setLocalStorage(this.todoArray);
-    this.checkForRefresh();
+    this.createFooterForm(this.todoArray);
+    this.checksForRefresh(this.todoArray);
   }
   createTodoList(array) {
     const todoListRef = document.querySelector('.todoList');
-
     if (todoListRef) {
       todoListRef.innerHTML = '';
 
@@ -351,16 +320,14 @@ class App {
     }
   }
 
-  createFooterForm() {
+  createFooterForm(array) {
     const footerDiv = document.createElement('div');
     footerDiv.classList.add('footerDiv');
     const form = document.querySelector('.form');
     form.append(footerDiv);
 
     const quantity = document.createElement('span');
-    const activeTodos = TodoService.parseLocalStorage().filter(
-      todo => todo.checked !== true,
-    );
+    const activeTodos = array.filter(todo => todo.checked !== true);
     quantity.textContent = activeTodos.length + ` item left`;
 
     const filterBtns = document.createElement('div');
@@ -380,23 +347,21 @@ class App {
     btnCompleted.textContent = 'Completed';
     btnCompleted.id = 'Completed';
     filterBtns.append(btnAll, btnActive, btnCompleted);
-    footerDiv.appendChild(filterBtns);
-    filterBtns.addEventListener('click', TodoService.handleFilter);
+    filterBtns.addEventListener('click', todoService.handleFilter);
 
     const btnClear = document.createElement('button');
     btnClear.type = 'button';
     btnClear.classList.add('clearBtn');
     btnClear.textContent = 'Clear completed';
     btnClear.id = 'clear';
-    btnClear.addEventListener('click', TodoService.handleClearCompleted);
+    btnClear.addEventListener('click', todoService.handleClearCompleted);
 
     footerDiv.append(quantity, filterBtns, btnClear);
     return footerDiv;
   }
 
-  checkForRefresh() {
-    const todoArray = TodoService.parseLocalStorage();
-    const isAnyCompleted = todoArray.some(todo => todo.checked === true);
+  checksForRefresh(array) {
+    const isAnyCompleted = array.some(todo => todo.checked === true);
     const btnClearRef = document.querySelector('.clearBtn');
     if (isAnyCompleted) {
       btnClearRef.classList.add('clearBtnShow');
@@ -405,27 +370,27 @@ class App {
     }
 
     const quantityRef = document.querySelector('span');
-    const activeTodos = todoArray.filter(todo => todo.checked !== true);
+    const activeTodos = array.filter(todo => todo.checked !== true);
     if (quantityRef) {
       quantityRef.textContent = activeTodos.length + ` item left`;
     }
 
     const footerForm = document.querySelector('.footerDiv');
-    if (todoArray.length === 0) {
+    if (array.length === 0) {
       footerForm.style.display = 'none';
     } else {
       footerForm.style.display = 'flex';
     }
 
     const inputRef = document.querySelector('.mainInput');
-    if (todoArray.every(todo => todo.checked === true)) {
+    if (array.every(todo => todo.checked === true)) {
       inputRef.classList.add('extra');
     } else {
       inputRef.classList.remove('extra');
     }
 
     const labelRef = document.querySelector('.label');
-    if (todoArray.length === 0) {
+    if (array.length === 0) {
       labelRef.style.display = 'none';
     } else {
       labelRef.style.display = 'flex';
