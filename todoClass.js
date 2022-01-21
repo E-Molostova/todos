@@ -78,6 +78,7 @@ class TodoService extends MyEventEmitter {
       todoService.setLocalStorage(newTodoArray);
     }
   }
+
   handleAllCompleted() {
     const todoArray = todoService.parseLocalStorage();
     const isAnyActive = todoArray.some(todo => todo.checked === false);
@@ -162,7 +163,6 @@ class Form {
     todoList.classList.add('todoList');
     todoList.addEventListener('click', todoService.deleteTodo);
     form.appendChild(todoList);
-    return form;
   }
 }
 
@@ -210,16 +210,14 @@ class TodoItem {
 
   handleCompleteTodo(e) {
     if (e.target.nodeName === 'LABEL') {
-      const todoArray = todoService.parseLocalStorage();
-
       const targetId = e.target.closest('li').id;
+      const todoArray = todoService.parseLocalStorage();
       const newTodoArray = todoArray.map(todo => {
         if (todo.id === targetId) {
           todo.checked = !todo.checked;
         }
         return todo;
       });
-
       todoService.setLocalStorage(newTodoArray);
     }
   }
@@ -285,7 +283,6 @@ class TodoItem {
       }
       return todo;
     });
-
     todoService.setLocalStorage(newTodoArray);
   }
 }
@@ -299,9 +296,10 @@ class App {
     this.todoArray = todoService.parseLocalStorage();
     this.form;
     this.createTodoList(this.todoArray);
-    this.createFooterForm(this.todoArray);
     this.checksForRefresh(this.todoArray);
+    this.createFooterForm(this.todoArray);
   }
+
   createTodoList(array) {
     const todoListRef = document.querySelector('.todoList');
     if (todoListRef) {
@@ -316,7 +314,7 @@ class App {
         return itemTodo.item;
       });
       todoListRef.append(...todoItems);
-      return todoListRef;
+      // return todoListRef;
     }
   }
 
@@ -356,30 +354,31 @@ class App {
     btnClear.id = 'clear';
     btnClear.addEventListener('click', todoService.handleClearCompleted);
 
+    footerDiv.innerHTML = '';
     footerDiv.append(quantity, filterBtns, btnClear);
-    return footerDiv;
+    // return footerDiv;
   }
 
   checksForRefresh(array) {
-    const isAnyCompleted = array.some(todo => todo.checked === true);
-    const btnClearRef = document.querySelector('.clearBtn');
-    if (isAnyCompleted) {
-      btnClearRef.classList.add('clearBtnShow');
+    const footerForm = document.querySelector('.footerDiv');
+    if (array.length === 0) {
+      footerForm.style.display = 'none';
+    }
+    if (array.length === 0 && footerForm) {
+      footerForm.style.display = 'flex';
+    }
+
+    const labelRef = document.querySelector('.label');
+    if (array.length === 0) {
+      labelRef.style.display = 'none';
     } else {
-      btnClearRef?.classList.remove('clearBtnShow');
+      labelRef.style.display = 'flex';
     }
 
     const quantityRef = document.querySelector('span');
     const activeTodos = array.filter(todo => todo.checked !== true);
     if (quantityRef) {
       quantityRef.textContent = activeTodos.length + ` item left`;
-    }
-
-    const footerForm = document.querySelector('.footerDiv');
-    if (array.length === 0) {
-      footerForm.style.display = 'none';
-    } else {
-      footerForm.style.display = 'flex';
     }
 
     const inputRef = document.querySelector('.mainInput');
@@ -389,11 +388,12 @@ class App {
       inputRef.classList.remove('extra');
     }
 
-    const labelRef = document.querySelector('.label');
-    if (array.length === 0) {
-      labelRef.style.display = 'none';
+    const isAnyCompleted = array.some(todo => todo.checked === true);
+    const btnClearRef = document.querySelector('.clearBtn');
+    if (isAnyCompleted) {
+      btnClearRef?.classList.add('clearBtnShow');
     } else {
-      labelRef.style.display = 'flex';
+      btnClearRef?.classList.remove('clearBtnShow');
     }
   }
 }
