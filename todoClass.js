@@ -293,6 +293,7 @@ class App {
     this.todoArray = todoService.parseLocalStorage();
     this.createTodoList(this.todoArray);
     this.createFooterForm(this.todoArray);
+    this.checksForRefresh(this.todoArray);
   }
 
   render() {
@@ -378,7 +379,6 @@ class App {
     const footerDivRef = document.querySelector('.footerDiv');
 
     const quantity = document.querySelector('span');
-    quantity.innerHTML = '';
     const activeTodos = array.filter(todo => todo.checked !== true);
     quantity.textContent = activeTodos.length + ` item left`;
 
@@ -397,8 +397,7 @@ class App {
     const footerForm = document.querySelector('.footerDiv');
     if (array.length === 0) {
       footerForm.style.display = 'none';
-    }
-    if (array.length === 0 && footerForm) {
+    } else {
       footerForm.style.display = 'flex';
     }
 
@@ -414,6 +413,14 @@ class App {
       inputRef.classList.add('extra');
     } else {
       inputRef.classList.remove('extra');
+    }
+
+    const btnClear = footerForm.querySelector('.clearBtn');
+    const isAnyCompleted = array.some(todo => todo.checked === true);
+    if (isAnyCompleted) {
+      btnClear?.classList.add('clearBtnShow');
+    } else {
+      btnClear?.classList.remove('clearBtnShow');
     }
   }
 }
