@@ -57,6 +57,7 @@ class TodoService extends MyEventEmitter {
       }).then(data => {
         todoApp.renderTodoList(data);
         todoApp.renderFooterForm(data);
+        todoApp.checksForRefresh(data);
       });
     } else {
       alert('Write task description please!');
@@ -80,6 +81,7 @@ class TodoService extends MyEventEmitter {
 
   handleAllCompleted() {
     callAPI('/todos/toggle-completed').then(data => {
+      todoApp.checksForRefresh(data);
       todoApp.renderTodoList(data);
       todoApp.renderFooterForm(data);
     });
@@ -206,6 +208,7 @@ class TodoItem {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       }).then(data => {
+        todoApp.checksForRefresh(data);
         todoApp.renderTodoList(data);
         todoApp.renderFooterForm(data);
       });
