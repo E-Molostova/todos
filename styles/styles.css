@@ -170,6 +170,7 @@ body {
   justify-content: space-between;
   align-items: baseline;
   padding: 10px;
+  margin: 0 auto;
 }
 
 .filterBtn {
