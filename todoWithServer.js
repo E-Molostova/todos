@@ -1,3 +1,5 @@
+import { callAPI } from './fetchTodos.js';
+
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
     (
@@ -6,8 +8,6 @@ function uuidv4() {
     ).toString(16),
   );
 }
-
-import { fetchTodos } from './fetchTodos';
 
 class MyEventEmitter {
   constructor() {
@@ -43,33 +43,21 @@ class TodoService extends MyEventEmitter {
     });
   }
 
-  // getTodos() {
-  //   fetchTodos().then(data =>
-  //     localStorage.setItem('todoList', JSON.stringify(data)),
-  //   );
-  // }
-
-  parseLocalStorage() {
-    return JSON.parse(localStorage.getItem('todoList')) || [];
-  }
-
-  setLocalStorage(array) {
-    localStorage.setItem('todoList', JSON.stringify(array));
-    this.emit('LocalStorageChange');
-  }
-
   addTodo(e) {
     e.preventDefault();
     const input = document.querySelector('#mainInput');
-    if (input.value.trim() !== '') {
-      const newTodo = {
-        id: uuidv4(),
-        description: input.value.trim(),
-        checked: false,
-      };
-      const todoArray = todoService.parseLocalStorage();
-      const newTodoArray = [...todoArray, newTodo];
-      todoService.setLocalStorage(newTodoArray);
+    const inputText = input.value.trim();
+    if (inputText !== '') {
+      callAPI('/todos', {
+        method: 'POST',
+        body: JSON.stringify(inputText),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      }).then(data => {
+        todoApp.renderTodoList(data);
+        todoApp.renderFooterForm(data);
+      });
     } else {
       alert('Write task description please!');
     }
@@ -81,47 +69,40 @@ class TodoService extends MyEventEmitter {
   deleteTodo(e) {
     if (e.target.nodeName === 'BUTTON') {
       const itemId = e.target.parentNode.id;
-      let todoArray = todoService.parseLocalStorage();
-      const newTodoArray = todoArray.filter(todo => todo.id !== itemId);
-      todoService.setLocalStorage(newTodoArray);
+      callAPI(`/todos/?id=${itemId}`, {
+        method: 'DELETE',
+      }).then(data => {
+        todoApp.renderTodoList(data);
+        todoApp.renderFooterForm(data);
+      });
     }
   }
 
   handleAllCompleted() {
-    const todoArray = todoService.parseLocalStorage();
-    const isAnyActive = todoArray.some(todo => todo.checked === false);
-
-    if (isAnyActive) {
-      const newTodoArray = todoArray.map(todo => {
-        todo.checked = true;
-        return todo;
-      });
-      todoService.setLocalStorage(newTodoArray);
-    } else {
-      const newTodoArray = todoArray.map(todo => {
-        todo.checked = false;
-        return todo;
-      });
-      todoService.setLocalStorage(newTodoArray);
-    }
+    callAPI('/todos/toggle-completed').then(data => {
+      todoApp.renderTodoList(data);
+      todoApp.renderFooterForm(data);
+    });
   }
 
   handleFilter(e) {
-    const todoArray = todoService.parseLocalStorage();
-
     switch (e.target.id) {
       case 'All':
-        todoApp.renderTodoList(todoArray);
+        callAPI('/todos').then(data => todoApp.renderTodoList(data));
         break;
 
       case 'Active':
-        const todos = todoArray.filter(todo => todo.checked === false);
-        todoApp.renderTodoList(todos);
+        callAPI('/todos')
+          .then(data => data.filter(todo => todo.completed === false))
+          .then(data => todoApp.renderTodoList(data));
+
         break;
 
       case 'Completed':
-        const todosToShow = todoArray.filter(todo => todo.checked === true);
-        todoApp.renderTodoList(todosToShow);
+        callAPI('/todos')
+          .then(data => data.filter(todo => todo.completed === true))
+          .then(data => todoApp.renderTodoList(data));
+
         break;
 
       default:
@@ -130,9 +111,10 @@ class TodoService extends MyEventEmitter {
   }
 
   handleClearCompleted() {
-    const todoArray = todoService.parseLocalStorage();
-    const newTodoArray = todoArray.filter(todo => todo.checked === false);
-    todoService.setLocalStorage(newTodoArray);
+    callAPI('/todos/clear-completed').then(data => {
+      todoApp.renderTodoList(data);
+      todoApp.renderFooterForm(data);
+    });
   }
 }
 
@@ -172,10 +154,10 @@ class Form {
 }
 
 class TodoItem {
-  constructor({ id, description, checked }) {
+  constructor({ id, description, completed }) {
     this.id = id;
     this.description = description;
-    this.checked = checked;
+    this.completed = completed;
     this.item = this.createLi();
   }
 
@@ -184,20 +166,20 @@ class TodoItem {
     itemTodo.classList.add('todoItem');
     itemTodo.id = this.id;
 
-    const completed = document.createElement('input');
-    completed.type = 'checkbox';
-    completed.id = 'check';
-    completed.checked = this.checked;
-    this.checked
-      ? completed.classList.add('custom-checkbox', 'extra')
-      : completed.classList.add('custom-checkbox');
+    const isCompleted = document.createElement('input');
+    isCompleted.type = 'checkbox';
+    isCompleted.id = 'check';
+    isCompleted.completed = this.completed;
+    this.completed
+      ? isCompleted.classList.add('custom-checkbox', 'extra')
+      : isCompleted.classList.add('custom-checkbox');
 
     const label = document.createElement('label');
     label.setAttribute('for', 'check');
     label.setAttribute('id', 'label');
 
     const text = document.createElement('p');
-    this.checked
+    this.completed
       ? text.classList.add('description', 'todoCompleted')
       : text.classList.add('description');
     text.textContent = this.description;
@@ -207,7 +189,7 @@ class TodoItem {
     button.classList.add('btn');
     button.textContent = '×';
 
-    itemTodo.append(completed, label, text, button);
+    itemTodo.append(isCompleted, label, text, button);
     itemTodo.addEventListener('click', this.handleCompleteTodo.bind(this));
     itemTodo.addEventListener('dblclick', this.handleChangeText.bind(this));
     return itemTodo;
@@ -216,14 +198,17 @@ class TodoItem {
   handleCompleteTodo(e) {
     if (e.target.nodeName === 'LABEL') {
       const targetId = e.target.closest('li').id;
-      const todoArray = todoService.parseLocalStorage();
-      const newTodoArray = todoArray.map(todo => {
-        if (todo.id === targetId) {
-          todo.checked = !todo.checked;
-        }
-        return todo;
+      const completed = e.target.closest('li').children[0].completed;
+      callAPI(`/todos/?id=${targetId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ id: targetId, completed: !completed }),
+        headers: {
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+      }).then(data => {
+        todoApp.renderTodoList(data);
+        todoApp.renderFooterForm(data);
       });
-      todoService.setLocalStorage(newTodoArray);
     }
   }
 
@@ -261,8 +246,7 @@ class TodoItem {
     }
 
     if (e.keyCode === 27) {
-      const todoArray = todoService.parseLocalStorage();
-      todoService.setLocalStorage(todoArray);
+      callAPI('/todos').then(data => todoApp.renderTodoList(data));
     }
   }
 
@@ -272,23 +256,16 @@ class TodoItem {
 
   handleChanges(e) {
     const targetId = e.target.parentNode.id;
-    const isChecked = e.target.parentNode.children[0].checked;
     const btn = e.target.parentNode.children[3];
     btn.classList.remove('editable');
-
-    const todoArray = todoService.parseLocalStorage();
-    const newTodo = {
-      id: targetId,
-      description: e.target.innerText,
-      checked: isChecked,
-    };
-    const newTodoArray = todoArray.map(todo => {
-      if (todo.id === targetId) {
-        todo = newTodo;
-      }
-      return todo;
-    });
-    todoService.setLocalStorage(newTodoArray);
+    const newDescription = e.target.innerText;
+    callAPI(`/todos/?id=${targetId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ id: targetId, description: newDescription }),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    }).then(data => todoApp.renderTodoList(data));
   }
 }
 
@@ -298,17 +275,11 @@ class App {
   }
 
   start() {
-    this.todoArray = todoService.parseLocalStorage();
-    this.createTodoList(this.todoArray);
-    this.createFooterForm(this.todoArray);
-    this.checksForRefresh(this.todoArray);
-  }
-
-  render() {
-    this.todoArray = todoService.parseLocalStorage();
-    this.renderTodoList(this.todoArray);
-    this.renderFooterForm(this.todoArray);
-    this.checksForRefresh(this.todoArray);
+    callAPI('/todos').then(data => {
+      this.createTodoList(data);
+      this.createFooterForm(data);
+      this.checksForRefresh(data);
+    });
   }
 
   createTodoList(array) {
@@ -337,7 +308,7 @@ class App {
       const itemTodo = new TodoItem({
         id: todo.id,
         description: todo.description,
-        checked: todo.checked,
+        completed: todo.completed,
       });
       return itemTodo.item;
     });
@@ -352,7 +323,7 @@ class App {
     this.checksForRefresh(array);
 
     const quantity = document.createElement('span');
-    const activeTodos = array.filter(todo => todo.checked !== true);
+    const activeTodos = array.filter(todo => todo.completed !== true);
     quantity.textContent = activeTodos.length + ` item left`;
 
     const filterBtns = document.createElement('div');
@@ -387,11 +358,11 @@ class App {
     const footerDivRef = document.querySelector('.footerDiv');
 
     const quantity = document.querySelector('span');
-    const activeTodos = array.filter(todo => todo.checked !== true);
+    const activeTodos = array.filter(todo => todo.completed !== true);
     quantity.textContent = activeTodos.length + ` item left`;
 
     const btnClear = document.querySelector('#clear');
-    const isAnyCompleted = array.some(todo => todo.checked === true);
+    const isAnyCompleted = array.some(todo => todo.completed === true);
     if (isAnyCompleted) {
       btnClear?.classList.add('clearBtnShow');
     } else {
@@ -417,14 +388,14 @@ class App {
     }
 
     const inputRef = document.querySelector('.mainInput');
-    if (array.every(todo => todo.checked === true)) {
+    if (array.every(todo => todo.completed === true)) {
       inputRef.classList.add('extra');
     } else {
       inputRef.classList.remove('extra');
     }
 
     const btnClear = footerForm.querySelector('.clearBtn');
-    const isAnyCompleted = array.some(todo => todo.checked === true);
+    const isAnyCompleted = array.some(todo => todo.completed === true);
     if (isAnyCompleted) {
       btnClear?.classList.add('clearBtnShow');
     } else {

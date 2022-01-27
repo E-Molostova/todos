@@ -1,9 +1,12 @@
-const BASE_URL = 'http://localhost:8000/todos';
-export const fetchTodos = async () => {
-  return await fetch(`${BASE_URL}`)
-    .then(data => {
-      return data.json();
-    })
-    .catch(err => console.log(err));
+const BASE_URL = 'http://localhost:8000';
+
+export const callAPI = async (endpoint, options) => {
+  try {
+    const data = await fetch(`${BASE_URL}${endpoint}`, options);
+    if (data.ok) {
+      return await data.json();
+    }
+  } catch (error) {
+    throw error;
+  }
 };
-console.log(fetchTodos().then(data => console.log(data)));
