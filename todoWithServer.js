@@ -55,9 +55,7 @@ class TodoService extends MyEventEmitter {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       }).then(data => {
-        todoApp.renderTodoList(data);
-        todoApp.renderFooterForm(data);
-        todoApp.checksForRefresh(data);
+        todoApp.render(data);
       });
     } else {
       alert('Write task description please!');
@@ -73,17 +71,14 @@ class TodoService extends MyEventEmitter {
       callAPI(`/todos/?id=${itemId}`, {
         method: 'DELETE',
       }).then(data => {
-        todoApp.renderTodoList(data);
-        todoApp.renderFooterForm(data);
+        todoApp.render(data);
       });
     }
   }
 
   handleAllCompleted() {
     callAPI('/todos/toggle-completed').then(data => {
-      todoApp.checksForRefresh(data);
-      todoApp.renderTodoList(data);
-      todoApp.renderFooterForm(data);
+      todoApp.render(data);
     });
   }
 
@@ -114,8 +109,7 @@ class TodoService extends MyEventEmitter {
 
   handleClearCompleted() {
     callAPI('/todos/clear-completed').then(data => {
-      todoApp.renderTodoList(data);
-      todoApp.renderFooterForm(data);
+      todoApp.render(data);
     });
   }
 }
@@ -208,9 +202,7 @@ class TodoItem {
           'Content-Type': 'application/json; charset=UTF-8',
         },
       }).then(data => {
-        todoApp.checksForRefresh(data);
-        todoApp.renderTodoList(data);
-        todoApp.renderFooterForm(data);
+        todoApp.render(data);
       });
     }
   }
@@ -268,7 +260,7 @@ class TodoItem {
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
-    }).then(data => todoApp.renderTodoList(data));
+    }).then(data => todoApp.render(data));
   }
 }
 
@@ -283,6 +275,11 @@ class App {
       this.createFooterForm(data);
       this.checksForRefresh(data);
     });
+  }
+  render(array) {
+    this.renderTodoList(array);
+    this.renderFooterForm(array);
+    this.checksForRefresh(array);
   }
 
   createTodoList(array) {
