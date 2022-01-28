@@ -5,10 +5,10 @@ class TodoService {
     callAPI('/todos').then(data => todoApp.render(data));
   }
 
-  addTodo(item) {
+  addTodo(text) {
     callAPI('/todos', {
       method: 'POST',
-      body: JSON.stringify(item),
+      body: JSON.stringify(text),
       headers: {
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -176,7 +176,6 @@ class Form {
     form.classList.add('form');
 
     form.addEventListener('submit', todoHandlers.handleSubmit);
-
     return form;
   }
 }
@@ -193,7 +192,6 @@ class MainInput {
     input.autocomplete = 'off';
     input.placeholder = 'What needs to be done?';
     input.classList.add('mainInput');
-
     return input;
   }
 }
@@ -217,17 +215,12 @@ class LabelForForm {
   }
 
   createLabel() {
-    const svg = document.createElement('svg');
-    svg.classList.add('svg');
-    const use = document.createElement('use');
-    use.setAttribute('href', './icons/checkmark.svg');
-    // use.setAttribute('width', '50px');
-    // use.setAttribute('height', '50px');
+    const label = document.createElement('label');
+    label.classList.add('label');
+    label.setAttribute('for', 'mainInput');
 
-    svg.appendChild(use);
-    svg.addEventListener('click', todoService.todoAllCompleted);
-
-    return svg;
+    label.addEventListener('click', todoService.todoAllCompleted);
+    return label;
   }
 }
 
@@ -357,8 +350,8 @@ class App {
   constructor() {
     this.title = new FormTitle();
     this.form = new Form();
-    this.input = new MainInput();
     this.label = new LabelForForm();
+    this.input = new MainInput();
     this.list = new TodoList();
     this.footerForm = new FooterForm();
     this.quantity = new ActiveQuantity();
@@ -386,6 +379,7 @@ class App {
   render(array) {
     this.renderTodoList(array);
     this.renderFooterForm(array);
+    this.checkForLabel(array);
   }
 
   renderTodoList(array) {
@@ -423,16 +417,13 @@ class App {
     }
   }
 
-  //   checksForRefresh(array) {
-  //
-  //     const inputRef = document.querySelector('.mainInput');
-  //     if (array.every(todo => todo.completed === true)) {
-  //       inputRef.classList.add('extra');
-  //     } else {
-  //       inputRef.classList.remove('extra');
-  //     }
-
-  //   }
+  checkForLabel(array) {
+    if (array.every(todo => todo.completed === true)) {
+      this.input.input.classList.add('extra');
+    } else {
+      this.input.input.classList.remove('extra');
+    }
+  }
 }
 
 const todoApp = new App();

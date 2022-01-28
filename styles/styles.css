@@ -59,15 +59,20 @@ body {
   color: rgb(177, 172, 172);
 }
 
-.svg {
-  width: 40px;
-  height: 40px;
-  display: inline-block;
+.mainInput + label::before {
+  content: '❭';
   position: absolute;
+  transform: rotate(90deg);
+  left: 165px;
+  top: 150px;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
+  color: lightgray;
+}
 
-  fill: black;
-  background-color: tomato;
-  color: green;
+.mainInput.extra + label::before {
+  color: rgb(77, 77, 77);
 }
 
 .todoList {
