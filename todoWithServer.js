@@ -231,6 +231,62 @@ class LabelForForm {
   }
 }
 
+class TodoItem {
+  constructor({ id, description, completed }) {
+    this.id = id;
+    this.description = description;
+    this.completed = completed;
+    this.item = this.createLi();
+  }
+
+  createLi() {
+    const itemTodo = document.createElement('li');
+    itemTodo.classList.add('todoItem');
+    itemTodo.id = this.id;
+
+    const isCompleted = document.createElement('input');
+    isCompleted.type = 'checkbox';
+    isCompleted.id = 'check';
+    isCompleted.completed = this.completed;
+    this.completed
+      ? isCompleted.classList.add('custom-checkbox', 'extra')
+      : isCompleted.classList.add('custom-checkbox');
+
+    const label = document.createElement('label');
+    label.setAttribute('for', 'check');
+    label.setAttribute('id', 'label');
+
+    const text = document.createElement('p');
+    this.completed
+      ? text.classList.add('description', 'todoCompleted')
+      : text.classList.add('description');
+    text.textContent = this.description;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.classList.add('btn');
+    button.textContent = '×';
+    button.addEventListener('click', todoHandlers.handleDelete);
+
+    itemTodo.append(isCompleted, label, text, button);
+    itemTodo.addEventListener('click', todoHandlers.handleCompleteTodo);
+    itemTodo.addEventListener('dblclick', todoHandlers.handleEditingMode);
+    return itemTodo;
+  }
+}
+
+class TodoList {
+  constructor() {
+    this.list = this.createTodoList();
+  }
+
+  createTodoList() {
+    const todoList = document.createElement('ul');
+    todoList.classList.add('todoList');
+    return todoList;
+  }
+}
+
 class FooterForm {
   constructor() {
     this.footerForm = this.createFooter();
@@ -294,62 +350,6 @@ class ClearBtn {
     btnClear.id = 'clear';
     btnClear.addEventListener('click', todoService.clearCompleted);
     return btnClear;
-  }
-}
-
-class TodoItem {
-  constructor({ id, description, completed }) {
-    this.id = id;
-    this.description = description;
-    this.completed = completed;
-    this.item = this.createLi();
-  }
-
-  createLi() {
-    const itemTodo = document.createElement('li');
-    itemTodo.classList.add('todoItem');
-    itemTodo.id = this.id;
-
-    const isCompleted = document.createElement('input');
-    isCompleted.type = 'checkbox';
-    isCompleted.id = 'check';
-    isCompleted.completed = this.completed;
-    this.completed
-      ? isCompleted.classList.add('custom-checkbox', 'extra')
-      : isCompleted.classList.add('custom-checkbox');
-
-    const label = document.createElement('label');
-    label.setAttribute('for', 'check');
-    label.setAttribute('id', 'label');
-
-    const text = document.createElement('p');
-    this.completed
-      ? text.classList.add('description', 'todoCompleted')
-      : text.classList.add('description');
-    text.textContent = this.description;
-
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.classList.add('btn');
-    button.textContent = '×';
-    button.addEventListener('click', todoHandlers.handleDelete);
-
-    itemTodo.append(isCompleted, label, text, button);
-    itemTodo.addEventListener('click', todoHandlers.handleCompleteTodo);
-    itemTodo.addEventListener('dblclick', todoHandlers.handleEditingMode);
-    return itemTodo;
-  }
-}
-
-class TodoList {
-  constructor() {
-    this.list = this.createTodoList();
-  }
-
-  createTodoList() {
-    const todoList = document.createElement('ul');
-    todoList.classList.add('todoList');
-    return todoList;
   }
 }
 
