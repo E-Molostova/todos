@@ -34,14 +34,16 @@ body {
 
 .form {
   width: 550px;
-  margin: 0 auto;
   background-color: rgba(0, 0, 0, 0.004);
-  position: relative;
 }
 
 .mainInput {
   width: 550px;
   height: 65px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 auto;
   padding: 16px;
   color: rgb(77, 77, 77);
   padding-left: 60px;
@@ -49,6 +51,7 @@ body {
   outline: none;
   border: none;
   box-shadow: rgba(0, 0, 0, 0.03) 0px -2px 1px 0px inset;
+  position: relative;
 }
 
 .mainInput::placeholder {
@@ -56,20 +59,23 @@ body {
   color: rgb(177, 172, 172);
 }
 
-.mainInput + label::before {
-  content: '❭';
+.svg {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
   position: absolute;
-  transform: rotate(90deg);
-  left: -5px;
-  top: 150px;
-  width: 50px;
-  height: 50px;
-  font-size: 24px;
-  color: lightgray;
+
+  fill: black;
+  background-color: tomato;
+  color: green;
 }
 
-.mainInput.extra + label::before {
-  color: rgb(77, 77, 77);
+.todoList {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
 }
 
 .todoItem {

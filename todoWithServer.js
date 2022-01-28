@@ -23,16 +23,121 @@ class TodoService {
     });
   }
 
-  handleAllCompleted() {
+  todoOneCompleted(targetId, completed) {
+    callAPI(`/todos/?id=${targetId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ id: targetId, completed: !completed }),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    }).then(data => {
+      todoApp.render(data);
+    });
+  }
+
+  todoAllCompleted() {
     callAPI('/todos/toggle-completed').then(data => {
       todoApp.render(data);
     });
   }
 
-  handleClearCompleted() {
+  clearCompleted() {
     callAPI('/todos/clear-completed').then(data => {
       todoApp.render(data);
     });
+  }
+
+  toChangeText(targetId, newDescription) {
+    callAPI(`/todos/?id=${targetId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ id: targetId, description: newDescription }),
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    }).then(data => todoApp.render(data));
+  }
+}
+
+const todoService = new TodoService();
+
+class TodoHandlers {
+  handleSubmit(e) {
+    e.preventDefault();
+    const input = document.querySelector('#mainInput');
+    const inputText = input.value.trim();
+    if (inputText !== '') {
+      todoService.addTodo(inputText);
+    } else {
+      alert('Write task description please!');
+    }
+
+    const form = input.closest('form');
+    form.reset();
+  }
+
+  handleDelete(e) {
+    if (e.target.nodeName === 'BUTTON') {
+      const itemId = e.target.parentNode.id;
+      todoService.deleteTodo(itemId);
+    }
+  }
+
+  handleCompleteTodo(e) {
+    if (e.target.nodeName === 'LABEL') {
+      const targetId = e.target.closest('li').id;
+      const completed = e.target.closest('li').children[0].completed;
+      todoService.todoOneCompleted(targetId, completed);
+    }
+  }
+
+  handleEditingMode(e) {
+    if (e.target.tagName === 'P') {
+      const target = e.target;
+      const targetItem = e.target.parentNode;
+      const label = targetItem.children[1];
+      label.style.display = 'none';
+      const btn = targetItem.children[3];
+      btn.classList.add('editable');
+
+      target.setAttribute('contenteditable', 'true');
+
+      const editInput = document.createElement('input');
+      target.appendChild(editInput);
+      editInput.focus();
+      editInput.value = target.innerText;
+      target.innerText = editInput.value;
+
+      let [r, s] = [document.createRange(), window.getSelection()];
+      r.selectNodeContents(e.target);
+      r.collapse(false);
+      s.removeAllRanges();
+      s.addRange(r);
+
+      target.addEventListener('keydown', todoHandlers.handleEnterAndEscape);
+      target.addEventListener('blur', todoHandlers.handleBlur);
+    }
+  }
+
+  handleEnterAndEscape(e) {
+    if (e.keyCode === 13) {
+      todoHandlers.handleChanges(e);
+    }
+
+    if (e.keyCode === 27) {
+      callAPI('/todos').then(data => todoApp.renderTodoList(data));
+    }
+  }
+
+  handleBlur(e) {
+    todoHandlers.handleChanges(e);
+  }
+
+  handleChanges(e) {
+    const targetId = e.target.parentNode.id;
+    const btn = e.target.parentNode.children[3];
+    btn.classList.remove('editable');
+    const newDescription = e.target.innerText;
+    todoService.toChangeText(targetId, newDescription);
   }
 
   handleFilter(e) {
@@ -57,30 +162,9 @@ class TodoService {
         break;
     }
   }
-
-  handleSubmit(e) {
-    e.preventDefault();
-    const input = document.querySelector('#mainInput');
-    const inputText = input.value.trim();
-    if (inputText !== '') {
-      todoService.addTodo(inputText);
-    } else {
-      alert('Write task description please!');
-    }
-
-    const form = input.closest('form');
-    form.reset();
-  }
-
-  handleDelete(e) {
-    if (e.target.nodeName === 'BUTTON') {
-      const itemId = e.target.parentNode.id;
-      todoService.deleteTodo(itemId);
-    }
-  }
 }
 
-const todoService = new TodoService();
+const todoHandlers = new TodoHandlers();
 
 class Form {
   constructor() {
@@ -90,13 +174,19 @@ class Form {
   createForm() {
     const form = document.createElement('form');
     form.classList.add('form');
-    document.body.prepend(form);
 
-    const title = document.createElement('h1');
-    title.textContent = 'Todos';
-    title.classList.add('title');
-    form.prepend(title);
+    form.addEventListener('submit', todoHandlers.handleSubmit);
 
+    return form;
+  }
+}
+
+class MainInput {
+  constructor() {
+    this.input = this.createInput();
+  }
+
+  createInput() {
     const input = document.createElement('input');
     input.id = 'mainInput';
     input.type = 'text';
@@ -104,10 +194,20 @@ class Form {
     input.placeholder = 'What needs to be done?';
     input.classList.add('mainInput');
 
-    form.append(input);
-    form.addEventListener('submit', todoService.handleSubmit);
+    return input;
+  }
+}
 
-    return form;
+class FormTitle {
+  constructor() {
+    this.title = this.createTitle();
+  }
+
+  createTitle() {
+    const title = document.createElement('h1');
+    title.textContent = 'Todos';
+    title.classList.add('title');
+    return title;
   }
 }
 
@@ -117,11 +217,17 @@ class LabelForForm {
   }
 
   createLabel() {
-    const label = document.createElement('label');
-    label.classList.add('label');
-    label.setAttribute('for', 'mainInput');
-    label.addEventListener('click', todoService.handleAllCompleted);
-    return label;
+    const svg = document.createElement('svg');
+    svg.classList.add('svg');
+    const use = document.createElement('use');
+    use.setAttribute('href', './icons/checkmark.svg');
+    // use.setAttribute('width', '50px');
+    // use.setAttribute('height', '50px');
+
+    svg.appendChild(use);
+    svg.addEventListener('click', todoService.todoAllCompleted);
+
+    return svg;
   }
 }
 
@@ -144,9 +250,6 @@ class ActiveQuantity {
 
   createQuantity() {
     const quantity = document.createElement('span');
-    // const activeTodos = array.filter(todo => todo.completed !== true);
-    // quantity.textContent = activeTodos.length + ` item left`;
-    quantity.textContent = ` item left`;
     return quantity;
   }
 }
@@ -173,7 +276,7 @@ class FilterBtns {
     btnCompleted.textContent = 'Completed';
     btnCompleted.id = 'Completed';
     filterBtns.append(btnAll, btnActive, btnCompleted);
-    filterBtns.addEventListener('click', todoService.handleFilter);
+    filterBtns.addEventListener('click', todoHandlers.handleFilter);
     return filterBtns;
   }
 }
@@ -189,7 +292,7 @@ class ClearBtn {
     btnClear.classList.add('clearBtn');
     btnClear.textContent = 'Clear completed';
     btnClear.id = 'clear';
-    btnClear.addEventListener('click', todoService.handleClearCompleted);
+    btnClear.addEventListener('click', todoService.clearCompleted);
     return btnClear;
   }
 }
@@ -229,90 +332,34 @@ class TodoItem {
     button.type = 'button';
     button.classList.add('btn');
     button.textContent = '×';
+    button.addEventListener('click', todoHandlers.handleDelete);
 
     itemTodo.append(isCompleted, label, text, button);
-    itemTodo.addEventListener('click', this.handleCompleteTodo.bind(this));
-    itemTodo.addEventListener('dblclick', this.handleEditingMode.bind(this));
+    itemTodo.addEventListener('click', todoHandlers.handleCompleteTodo);
+    itemTodo.addEventListener('dblclick', todoHandlers.handleEditingMode);
     return itemTodo;
   }
+}
 
-  handleCompleteTodo(e) {
-    if (e.target.nodeName === 'LABEL') {
-      const targetId = e.target.closest('li').id;
-      const completed = e.target.closest('li').children[0].completed;
-      callAPI(`/todos/?id=${targetId}`, {
-        method: 'PUT',
-        body: JSON.stringify({ id: targetId, completed: !completed }),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-      }).then(data => {
-        todoApp.render(data);
-      });
-    }
+class TodoList {
+  constructor() {
+    this.list = this.createTodoList();
   }
 
-  handleEditingMode(e) {
-    if (e.target.tagName === 'P') {
-      const target = e.target;
-      const targetItem = e.target.parentNode;
-      const label = targetItem.children[1];
-      label.style.display = 'none';
-      const btn = targetItem.children[3];
-      btn.classList.add('editable');
-
-      target.setAttribute('contenteditable', 'true');
-
-      const editInput = document.createElement('input');
-      target.appendChild(editInput);
-      editInput.focus();
-      editInput.value = target.innerText;
-      target.innerText = editInput.value;
-
-      let [r, s] = [document.createRange(), window.getSelection()];
-      r.selectNodeContents(e.target);
-      r.collapse(false);
-      s.removeAllRanges();
-      s.addRange(r);
-
-      target.addEventListener('keydown', this.handleEnterAndEscape.bind(this));
-      target.addEventListener('blur', this.handleBlur.bind(this));
-    }
-  }
-
-  handleEnterAndEscape(e) {
-    if (e.keyCode === 13) {
-      this.handleChanges(e);
-    }
-
-    if (e.keyCode === 27) {
-      callAPI('/todos').then(data => todoApp.renderTodoList(data));
-    }
-  }
-
-  handleBlur(e) {
-    this.handleChanges(e);
-  }
-
-  handleChanges(e) {
-    const targetId = e.target.parentNode.id;
-    const btn = e.target.parentNode.children[3];
-    btn.classList.remove('editable');
-    const newDescription = e.target.innerText;
-    callAPI(`/todos/?id=${targetId}`, {
-      method: 'PUT',
-      body: JSON.stringify({ id: targetId, description: newDescription }),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    }).then(data => todoApp.render(data));
+  createTodoList() {
+    const todoList = document.createElement('ul');
+    todoList.classList.add('todoList');
+    return todoList;
   }
 }
 
 class App {
   constructor() {
+    this.title = new FormTitle();
     this.form = new Form();
+    this.input = new MainInput();
     this.label = new LabelForForm();
+    this.list = new TodoList();
     this.footerForm = new FooterForm();
     this.quantity = new ActiveQuantity();
     this.filterBtns = new FilterBtns();
@@ -320,120 +367,72 @@ class App {
   }
 
   start() {
-    this.form.form.append(this.label.label);
-    document.body.appendChild(this.footerForm.footerForm);
+    document.body.prepend(
+      this.title.title,
+      this.form.form,
+      this.input.input,
+      this.label.label,
+      this.list.list,
+      this.footerForm.footerForm,
+    );
     this.footerForm.footerForm.append(
       this.quantity.quantity,
       this.filterBtns.filterBtns,
       this.clearBtn.clearBtn,
     );
-    callAPI('/todos').then(data => {
-      this.createTodoList(data);
-      this.createFooterForm(data);
-      this.checksForRefresh(data);
-    });
+    todoService.getTodos();
   }
+
   render(array) {
     this.renderTodoList(array);
     this.renderFooterForm(array);
-    this.checksForRefresh(array);
-  }
-
-  handleSubmit(e) {
-    e.preventDefault();
-    const input = document.querySelector('#mainInput');
-    const inputText = input.value.trim();
-    if (inputText !== '') {
-      todoService.addTodo(inputText);
-    } else {
-      alert('Write task description please!');
-    }
-
-    const form = input.closest('form');
-    form.reset();
-  }
-
-  createTodoList(array) {
-    if (array.length !== 0) {
-      const todoList = document.createElement('ul');
-      todoList.addEventListener('click', todoService.handleDelete);
-      todoList.classList.add('todoList');
-      const form = document.querySelector('form');
-      form.appendChild(todoList);
-      const todos = this.listLayout(array);
-      todoList.append(...todos);
-    }
   }
 
   renderTodoList(array) {
-    const todoListRef = document.querySelector('.todoList');
-    if (todoListRef) {
-      todoListRef.innerHTML = '';
-      const todos = this.listLayout(array);
-      todoListRef.append(...todos);
+    this.list.list.innerHTML = '';
+    if (array.length !== 0) {
+      const todos = array.map(todo => {
+        const itemTodo = new TodoItem({
+          id: todo.id,
+          description: todo.description,
+          completed: todo.completed,
+        });
+        return itemTodo.item;
+      });
+      this.list.list.append(...todos);
     }
   }
-
-  listLayout(array) {
-    const todoItems = array.map(todo => {
-      const itemTodo = new TodoItem({
-        id: todo.id,
-        description: todo.description,
-        completed: todo.completed,
-      });
-      return itemTodo.item;
-    });
-    return todoItems;
-  }
-
-  createFooterForm(array) {}
 
   renderFooterForm(array) {
-    const footerDivRef = document.querySelector('.footerDiv');
-
-    const quantity = document.querySelector('span');
-    const activeTodos = array.filter(todo => todo.completed !== true);
-    quantity.textContent = activeTodos.length + ` item left`;
-
-    const btnClear = document.querySelector('#clear');
-    const isAnyCompleted = array.some(todo => todo.completed === true);
-    if (isAnyCompleted) {
-      btnClear?.classList.add('clearBtnShow');
-    } else {
-      btnClear?.classList.remove('clearBtnShow');
-    }
-    footerDivRef.prepend(quantity);
-    footerDivRef.append(btnClear);
-  }
-
-  checksForRefresh(array) {
     if (array.length === 0) {
       this.footerForm.footerForm.style.display = 'none';
-    } else {
-      this.footerForm.footerForm.style.display = 'flex';
-    }
-
-    if (array.length === 0) {
       this.label.label.style.display = 'none';
     } else {
+      this.footerForm.footerForm.style.display = 'flex';
       this.label.label.style.display = 'flex';
     }
 
-    const inputRef = document.querySelector('.mainInput');
-    if (array.every(todo => todo.completed === true)) {
-      inputRef.classList.add('extra');
-    } else {
-      inputRef.classList.remove('extra');
-    }
+    const activeTodos = array.filter(todo => todo.completed !== true);
+    this.quantity.quantity.textContent = activeTodos.length + ` item left`;
 
-    // const btnClear = footerForm.querySelector('.clearBtn');
-    // const isAnyCompleted = array.some(todo => todo.completed === true);
-    // if (isAnyCompleted) {
-    //   btnClear?.classList.add('clearBtnShow');
-    // } else {
-    //   btnClear?.classList.remove('clearBtnShow');
-    // }
+    const isAnyCompleted = array.some(todo => todo.completed === true);
+    if (isAnyCompleted) {
+      this.clearBtn.clearBtn?.classList.add('clearBtnShow');
+    } else {
+      this.clearBtn.clearBtn?.classList.remove('clearBtnShow');
+    }
   }
+
+  //   checksForRefresh(array) {
+  //
+  //     const inputRef = document.querySelector('.mainInput');
+  //     if (array.every(todo => todo.completed === true)) {
+  //       inputRef.classList.add('extra');
+  //     } else {
+  //       inputRef.classList.remove('extra');
+  //     }
+
+  //   }
 }
 
 const todoApp = new App();
