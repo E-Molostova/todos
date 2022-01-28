@@ -363,11 +363,11 @@ class App {
     document.body.prepend(
       this.title.title,
       this.form.form,
-      this.input.input,
       this.label.label,
       this.list.list,
       this.footerForm.footerForm,
     );
+    this.form.form.appendChild(this.input.input);
     this.footerForm.footerForm.append(
       this.quantity.quantity,
       this.filterBtns.filterBtns,
@@ -419,9 +419,9 @@ class App {
 
   checkForLabel(array) {
     if (array.every(todo => todo.completed === true)) {
-      this.input.input.classList.add('extra');
+      this.label.label.classList.add('extra');
     } else {
-      this.input.input.classList.remove('extra');
+      this.label.label.classList.remove('extra');
     }
   }
 }
