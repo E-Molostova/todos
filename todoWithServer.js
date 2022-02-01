@@ -2,58 +2,58 @@ import { callAPI } from './fetchTodos.js';
 
 class TodoService {
   getTodos() {
-    callAPI('/todos').then(data => todoApp.render(data));
+    callAPI('/todos', {
+      method: 'GET',
+    }).then(data => todoApp.render(data));
   }
 
   addTodo(text) {
     callAPI('/todos', {
       method: 'POST',
       body: JSON.stringify(text),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
     }).then(data => todoApp.render(data));
   }
 
   deleteTodo(id) {
-    callAPI(`/todos/?id=${id}`, {
+    callAPI('/todos', {
+      query: { id },
       method: 'DELETE',
     }).then(data => {
       todoApp.render(data);
     });
   }
 
-  todoOneCompleted(targetId, completed) {
-    callAPI(`/todos/?id=${targetId}`, {
+  clearCompleted() {
+    callAPI('/todos/clear-completed', {
+      method: 'DELETE',
+    }).then(data => {
+      todoApp.render(data);
+    });
+  }
+
+  todoOneCompleted(id, completed) {
+    callAPI(`/todos`, {
       method: 'PUT',
-      body: JSON.stringify({ id: targetId, completed: !completed }),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+      query: { id },
+      body: JSON.stringify({ id, completed: !completed }),
     }).then(data => {
       todoApp.render(data);
     });
   }
 
   todoAllCompleted() {
-    callAPI('/todos/toggle-completed').then(data => {
-      todoApp.render(data);
-    });
-  }
-
-  clearCompleted() {
-    callAPI('/todos/clear-completed').then(data => {
-      todoApp.render(data);
-    });
-  }
-
-  toChangeText(targetId, newDescription) {
-    callAPI(`/todos/?id=${targetId}`, {
+    callAPI('/todos/toggle-completed', {
       method: 'PUT',
-      body: JSON.stringify({ id: targetId, description: newDescription }),
-      headers: {
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
+    }).then(data => {
+      todoApp.render(data);
+    });
+  }
+
+  toChangeText(id, description) {
+    callAPI(`/todos`, {
+      method: 'PUT',
+      query: { id },
+      body: JSON.stringify({ id, description }),
     }).then(data => todoApp.render(data));
   }
 }
@@ -84,7 +84,7 @@ class TodoHandlers {
 
   handleCompleteTodo(e) {
     if (e.target.nodeName === 'LABEL') {
-      const targetId = e.target.closest('li').id;
+      const targetId = e.target.parentNode.id;
       const completed = e.target.closest('li').children[0].completed;
       todoService.todoOneCompleted(targetId, completed);
     }
@@ -168,7 +168,7 @@ const todoHandlers = new TodoHandlers();
 
 class Form {
   constructor() {
-    this.form = this.createForm();
+    this.layout = this.createForm();
   }
 
   createForm() {
@@ -182,7 +182,7 @@ class Form {
 
 class MainInput {
   constructor() {
-    this.input = this.createInput();
+    this.layout = this.createInput();
   }
 
   createInput() {
@@ -198,7 +198,7 @@ class MainInput {
 
 class FormTitle {
   constructor() {
-    this.title = this.createTitle();
+    this.layout = this.createTitle();
   }
 
   createTitle() {
@@ -211,7 +211,7 @@ class FormTitle {
 
 class LabelForForm {
   constructor() {
-    this.label = this.createLabel();
+    this.layout = this.createLabel();
   }
 
   createLabel() {
@@ -229,7 +229,7 @@ class TodoItem {
     this.id = id;
     this.description = description;
     this.completed = completed;
-    this.item = this.createLi();
+    this.layout = this.createLi();
   }
 
   createLi() {
@@ -270,7 +270,7 @@ class TodoItem {
 
 class TodoList {
   constructor() {
-    this.list = this.createTodoList();
+    this.layout = this.createTodoList();
   }
 
   createTodoList() {
@@ -282,7 +282,7 @@ class TodoList {
 
 class FooterForm {
   constructor() {
-    this.footerForm = this.createFooter();
+    this.layout = this.createFooter();
   }
 
   createFooter() {
@@ -294,7 +294,7 @@ class FooterForm {
 
 class ActiveQuantity {
   constructor() {
-    this.quantity = this.createQuantity();
+    this.layout = this.createQuantity();
   }
 
   createQuantity() {
@@ -305,7 +305,7 @@ class ActiveQuantity {
 
 class FilterBtns {
   constructor() {
-    this.filterBtns = this.createFilterBtns();
+    this.layout = this.createFilterBtns();
   }
   createFilterBtns() {
     const filterBtns = document.createElement('div');
@@ -332,7 +332,7 @@ class FilterBtns {
 
 class ClearBtn {
   constructor() {
-    this.clearBtn = this.createClearBtn();
+    this.layout = this.createClearBtn();
   }
 
   createClearBtn() {
@@ -361,17 +361,17 @@ class App {
 
   start() {
     document.body.prepend(
-      this.title.title,
-      this.form.form,
-      this.label.label,
-      this.list.list,
-      this.footerForm.footerForm,
+      this.title.layout,
+      this.form.layout,
+      this.label.layout,
+      this.list.layout,
+      this.footerForm.layout,
     );
-    this.form.form.appendChild(this.input.input);
-    this.footerForm.footerForm.append(
-      this.quantity.quantity,
-      this.filterBtns.filterBtns,
-      this.clearBtn.clearBtn,
+    this.form.layout.appendChild(this.input.layout);
+    this.footerForm.layout.append(
+      this.quantity.layout,
+      this.filterBtns.layout,
+      this.clearBtn.layout,
     );
     todoService.getTodos();
   }
@@ -383,7 +383,7 @@ class App {
   }
 
   renderTodoList(array) {
-    this.list.list.innerHTML = '';
+    this.list.layout.innerHTML = '';
     if (array.length !== 0) {
       const todos = array.map(todo => {
         const itemTodo = new TodoItem({
@@ -391,37 +391,37 @@ class App {
           description: todo.description,
           completed: todo.completed,
         });
-        return itemTodo.item;
+        return itemTodo.layout;
       });
-      this.list.list.append(...todos);
+      this.list.layout.append(...todos);
     }
   }
 
   renderFooterForm(array) {
     if (array.length === 0) {
-      this.footerForm.footerForm.style.display = 'none';
-      this.label.label.style.display = 'none';
+      this.footerForm.layout.style.display = 'none';
+      this.label.layout.style.display = 'none';
     } else {
-      this.footerForm.footerForm.style.display = 'flex';
-      this.label.label.style.display = 'flex';
+      this.footerForm.layout.style.display = 'flex';
+      this.label.layout.style.display = 'flex';
     }
 
     const activeTodos = array.filter(todo => todo.completed !== true);
-    this.quantity.quantity.textContent = activeTodos.length + ` item left`;
+    this.quantity.layout.textContent = activeTodos.length + ` item left`;
 
     const isAnyCompleted = array.some(todo => todo.completed === true);
     if (isAnyCompleted) {
-      this.clearBtn.clearBtn?.classList.add('clearBtnShow');
+      this.clearBtn.layout?.classList.add('clearBtnShow');
     } else {
-      this.clearBtn.clearBtn?.classList.remove('clearBtnShow');
+      this.clearBtn.layout?.classList.remove('clearBtnShow');
     }
   }
 
   checkForLabel(array) {
     if (array.every(todo => todo.completed === true)) {
-      this.label.label.classList.add('extra');
+      this.label.layout.classList.add('extra');
     } else {
-      this.label.label.classList.remove('extra');
+      this.label.layout.classList.remove('extra');
     }
   }
 }
